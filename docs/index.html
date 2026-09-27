@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=f1bd799f">
+<link rel="stylesheet" href="styles.css?v=ba3a90e4">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -101,12 +101,19 @@
     </div>
 
     <p class="hero__venue" id="heroVenue"></p>
+  </div>
 
-    <div class="hero__cta">
-      <a class="btn btn--solid" href="#schedule">View Schedule</a>
-      <a class="btn btn--soft" href="#venue">Venue &amp; Map</a>
-      <a class="btn btn--soft" href="#rsvp">RSVP</a>
-    </div>
+  <!-- Moved out of .hero__card. The couple portrait is absolutely positioned
+       against the card's bottom edge, so a button row as the card's last child
+       sat directly on the picture — worst on a phone, where the type is large
+       relative to the viewport. The row now sits below the card entirely.
+       Consequence worth knowing: the card no longer contains the row, so it is
+       shorter than before and the 58% band is a slightly smaller strip. The
+       band's own geometry (inset, height) is unchanged. -->
+  <div class="hero__cta">
+    <a class="btn btn--solid" href="#schedule">View Schedule</a>
+    <a class="btn btn--soft" href="#venue">Venue &amp; Map</a>
+    <a class="btn btn--soft" href="#rsvp">RSVP</a>
   </div>
 </section>
 
@@ -278,6 +285,6 @@
 </div>
 
 <script src="data.js?v=40a6a197"></script>
-<script src="app.js?v=c6c5eaac"></script>
+<script src="app.js?v=28553cf4"></script>
 </body>
 </html>

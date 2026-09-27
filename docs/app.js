@@ -496,7 +496,7 @@
     if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     var blocks = [
-      ".hero__card", ".countdown", ".banner", ".families",
+      ".hero__card", ".hero__cta", ".countdown", ".banner", ".families",
       "#schedule", "#feature", "#venue", "#rituals", "#rsvp", "#verse", ".footer"
     ].join(",");
     var nodes = Array.prototype.slice.call(document.querySelectorAll(blocks))

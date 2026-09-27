@@ -291,7 +291,13 @@ body::after {
 .hero__card {
   position: relative; z-index: 1;
   max-width: 660px; margin: 0 auto;
-  padding: 60px 44px 54px;
+  /* Lifted. Less space above the kalash and the names, a little more below, so
+     the type block and the SVG art sit higher in the card with clearer air
+     between them and the portrait band. Top and bottom are traded against each
+     other (114px of vertical padding before, 106px now) rather than the top
+     simply being cut, so the card height — and therefore the 58% band, which is
+     a share of it — barely moves. */
+  padding: 44px 44px 62px;
   text-align: center;
   background: var(--card);
   border: 1px solid var(--line-soft);
@@ -337,7 +343,15 @@ body::after {
 .hero__venue { font-size: .95rem; color: var(--ink-soft); margin: 16px 0 0; }
 .hero__venue:empty { display: none; }
 
-.hero__cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 36px; }
+/* Lives outside .hero__card now, so it is no longer bounded by the card's
+   660px measure or lifted in with the card's reveal. Both are re-applied here:
+   the max-width keeps the row centred under the card rather than under the full
+   1040px hero, and auto side margins centre it on the page. `margin: 36px auto
+   0` keeps the original gap above the row. */
+.hero__cta {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+  max-width: 660px; margin: 36px auto 0;
+}
 
 /* ------------------------------------------------------------- shared labels */
 .section__eyebrow {
@@ -681,31 +695,52 @@ body::after {
    legible where the two overlap. */
 .deco--portrait {
   inset: auto 0 0 0;
+  /* Left at the committed 58% deliberately. This is a share of the card, so
+     raising it changes the image's size and crop — which is the thing that was
+     asked to stay as-is. The visibility fix below is contrast, not scale. */
   height: 58%;
   background-image: url("assets/couple-portrait.jpg");
   background-size: cover;
   background-position: center bottom;
   background-repeat: no-repeat;
-  /* .55, not .30. Every previous value was quietly burying this: the element
-     opacity, the mask ramp and the white wash all multiplied, and at .30 the
-     lower third still resolved to roughly 30% of a photo on a white card,
-     which reads as a faint tint rather than a picture. The names and the CTA
-     buttons are protected by the wash below and by their own backgrounds, so
-     the layer itself no longer has to be timid. */
-  opacity: .68;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .75) 16%, #000 36%);
-  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .75) 16%, #000 36%);
+  /* Three separate layers were dimming this, and that is why raising `opacity`
+     alone barely moved it. They compounded:
+       1. element opacity          (.68)
+       2. the mask ramp           (top 36% faded from transparent to opaque)
+       3. the ::after white wash  (up to .9 white over the top 28%)
+     At the vertical midpoint the mask was ~.9 and the wash ~.6, so a .68
+     element resolved to roughly 35% of the photo over a white card. Each knob
+     alone looked like the thing to turn, so each was turned alone.
+
+     opacity is now the single overall-strength control and the other two are
+     left alone: the fade is the mask's job, the type legibility is the wash's
+     job. Turning one of them at a time is what finally made this tunable.
+
+     .85. Fading the element also fades its ::after child, but that is harmless
+     here because the top of the band is already protected twice over — the
+     mask is `transparent` at 0% and the wash is solid --card there — so this
+     mostly softens the lower half, which is the half meant to be seen. .8 and
+     .9 are the next stops either way. */
+  opacity: .85;
+  /* Ramp is shorter and reaches full strength earlier, so more of the picture
+     is seen at true contrast. The long soft ramp is what made the top half
+     read as a gradient rather than a photograph. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .5) 9%, #000 20%);
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .5) 9%, #000 20%);
 }
-/* Protects the type zone only, and gets out of the way below 72% so the
-   picture is genuinely seen rather than hinted at. */
+/* Protects the type zone, then gets out of the way. The opaque card colour is
+   held only to 14% (was 28%) and the mid wash is much lighter (.3, was .42),
+   because with the mask now reaching full strength at 20% there is far less
+   fade underneath to hide behind. The type sits at the top of the band, which
+   is exactly where this stays opaque. */
 .deco--portrait::after {
   content: "";
   position: absolute; inset: 0;
   background: linear-gradient(180deg,
     var(--card) 0%,
-    rgba(255, 255, 255, .9) 28%,
-    rgba(255, 255, 255, .42) 48%,
-    transparent 72%);
+    rgba(255, 255, 255, .78) 14%,
+    rgba(255, 255, 255, .3) 34%,
+    transparent 58%);
 }
 @media (max-width: 700px) {
   .deco--portrait { height: 50%; }
@@ -820,7 +855,9 @@ body::after {
   body { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
 
   .hero { padding: 0 16px; margin-top: 20px; }
-  .hero__card { padding: 42px 22px 38px; border-radius: var(--r); }
+  /* Same top/bottom trade as desktop, lifted by a slightly smaller amount since
+     the viewport is already tight here. */
+  .hero__card { padding: 32px 22px 48px; border-radius: var(--r); }
   .hero__kalash { width: 42px; }
   .hero__names { font-size: clamp(2.2rem, 13vw, 3.1rem); gap: 2px 12px; }
 

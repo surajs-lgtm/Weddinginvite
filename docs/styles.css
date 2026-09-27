@@ -259,10 +259,16 @@ body::after {
 .btn--solid:hover { background: #3f4c28; }
 
 .btn--soft {
-  background: transparent; color: var(--ink);
+  /* Was fully transparent. It now sits over the couple artwork, so it carries
+     its own translucent card and a blur, or the picture shows straight through
+     the label and the button becomes unreadable. */
+  background: rgba(255, 255, 255, .82);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  color: var(--ink);
   border-color: var(--line);
 }
-.btn--soft:hover { border-color: var(--sage-500); color: var(--sage-700); }
+.btn--soft:hover { border-color: var(--sage-500); color: var(--sage-700); background: rgba(255, 255, 255, .95); }
 
 .btn--ghost { background: transparent; color: var(--ink-soft); border-color: var(--line); }
 .btn--ghost:hover { border-color: var(--sage-500); color: var(--sage-700); }
@@ -661,6 +667,48 @@ body::after {
 }
 @media (max-width: 700px) {
   .deco--toran { height: 48px; background-size: 480px 48px; }
+}
+
+/* the couple — generated artwork, 1100x614 (1.79:1), so it sits as a band
+   anchored to the bottom of the hero card rather than flanking the names.
+   A 1.79:1 image is too wide to place the figures either side of the type,
+   so the composition puts the card's lower half over the picture and leaves
+   the names and the kalash on clean card.
+
+   The mask is the important part. Without it the band ends on a hard
+   horizontal edge and reads as a pasted-in strip; fading the top out lets it
+   dissolve into the card instead. The flat wash on top is what keeps the type
+   legible where the two overlap. */
+.deco--portrait {
+  inset: auto 0 0 0;
+  height: 58%;
+  background-image: url("assets/couple-portrait.jpg");
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  /* .55, not .30. Every previous value was quietly burying this: the element
+     opacity, the mask ramp and the white wash all multiplied, and at .30 the
+     lower third still resolved to roughly 30% of a photo on a white card,
+     which reads as a faint tint rather than a picture. The names and the CTA
+     buttons are protected by the wash below and by their own backgrounds, so
+     the layer itself no longer has to be timid. */
+  opacity: .68;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .75) 16%, #000 36%);
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .75) 16%, #000 36%);
+}
+/* Protects the type zone only, and gets out of the way below 72% so the
+   picture is genuinely seen rather than hinted at. */
+.deco--portrait::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg,
+    var(--card) 0%,
+    rgba(255, 255, 255, .9) 28%,
+    rgba(255, 255, 255, .42) 48%,
+    transparent 72%);
+}
+@media (max-width: 700px) {
+  .deco--portrait { height: 50%; }
 }
 
 /* mandala — watermark behind the names, the one place the hero earns texture */

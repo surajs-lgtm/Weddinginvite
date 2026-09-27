@@ -476,7 +476,64 @@
   /* Re-check which function is running once the page has finished loading. */
   window.addEventListener("load", function () { markLive(); });
 
+  /* Rendered before initReveal below, so the ritual cards exist in the DOM by
+     the time it goes looking for targets to animate. */
   renderRituals();
+
+  /* ============================================================ scroll reveal
+     Runs last, so every card the renderers created is in the DOM before it
+     looks for them. Two deliberate choices:
+
+     - The `data-reveal` attribute is added *here* and only after confirming
+       IntersectionObserver exists. The stylesheet hides `[data-reveal]`, so if
+       the observer were unavailable and the attribute were still applied, the
+       page would go permanently blank. Gating the attribute on the feature
+       means any other environment simply never gets the hiding rule.
+     - Each target is unobserved once it has been revealed, so scrolling back
+       up re-runs nothing and there is no long-lived observer cost. */
+  (function initReveal() {
+    if (!("IntersectionObserver" in window)) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    var blocks = [
+      ".hero__card", ".countdown", ".banner", ".families",
+      "#schedule", "#feature", "#venue", "#rituals", "#rsvp", "#verse", ".footer"
+    ].join(",");
+    var nodes = Array.prototype.slice.call(document.querySelectorAll(blocks))
+      .concat(Array.prototype.slice.call(document.querySelectorAll(".event, .ritual, .venue, .count")))
+      /* Anything still hidden — an unpopulated venue, a verse nobody filled
+         in — is skipped rather than left stranded at opacity 0. */
+      .filter(function (n) { return n.offsetParent !== null || n.getClientRects().length; });
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-in");
+        io.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -6% 0px", threshold: 0.05 });
+
+    nodes.forEach(function (n) {
+      n.setAttribute("data-reveal", "");
+      /* Stagger siblings so a grid of cards arrives in sequence rather than
+         as one block. Capped, so a twelve-item ritual grid does not take
+         most of a second to finish. */
+      var index = Array.prototype.indexOf.call(n.parentNode.children, n);
+      n.style.setProperty("--reveal-delay", Math.min(Math.max(index, 0), 7) * 65 + "ms");
+      io.observe(n);
+    });
+
+    /* Safety net. The observer is reliable in every browser this site will
+       meet, but the failure it guards against is not a wrong animation, it is
+       a permanently invisible section — which on a wedding invitation is the
+       worst possible outcome. Generous enough that a guest who scrolls at
+       human speed still sees every reveal fire normally, short enough that
+       anything genuinely stranded self-heals. */
+    setTimeout(function () {
+      nodes.forEach(function (n) { n.classList.add("is-in"); });
+      io.disconnect();
+    }, 8000);
+  })();
 })();
 
 /* ============================================================ ceremonial intro

@@ -8,10 +8,16 @@
 <meta property="og:title" id="ogTitle" content="We're Getting Married">
 <meta property="og:description" id="ogDesc" content="Wedding invitation and schedule.">
 <meta name="theme-color" content="#fdfbf6">
+<!-- Marks the document as script-capable before the stylesheet loads. The
+     scroll-reveal hiding rule is scoped to .js, so this one attribute decides
+     whether anything is ever hidden. It also runs first so the flag is set
+     before first paint, which is what prevents a flash of visible content
+     collapsing away. -->
+<script>document.documentElement.className += " js";</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=de42cddc">
+<link rel="stylesheet" href="styles.css?v=c131fe18">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -48,6 +54,11 @@
   </div>
 </div>
 
+<!-- ============ toran ============
+     In normal flow, ahead of the topbar, so it can never overlap anything. The
+     stylesheet also scales it down on narrow screens. -->
+<div class="deco deco--toran" aria-hidden="true"></div>
+
 <!-- ============ pastel wash behind everything ============ -->
 <div class="bg" aria-hidden="true">
   <div class="bg__wash bg__wash--blush"></div>
@@ -63,6 +74,12 @@
 <!-- ============ hero ============ -->
 <section class="hero" id="hero">
   <div class="hero__card">
+    <span class="deco deco--mandala" aria-hidden="true"></span>
+    <span class="deco deco--corner deco--corner--tl" aria-hidden="true"></span>
+    <span class="deco deco--corner deco--corner--tr" aria-hidden="true"></span>
+    <span class="deco deco--corner deco--corner--bl" aria-hidden="true"></span>
+    <span class="deco deco--corner deco--corner--br" aria-hidden="true"></span>
+
     <img class="hero__kalash" src="assets/kalash.svg" alt="" aria-hidden="true">
 
     <p class="hero__blessing" id="heroBlessing">With the blessings of our families</p>
@@ -113,6 +130,7 @@
 </div>
 
 <!-- ============ families ============ -->
+<div class="deco deco--divider" aria-hidden="true"></div>
 <section class="families" id="families" aria-label="Families">
   <div class="family">
     <h3 class="family__side">Groom's Family</h3>
@@ -137,6 +155,7 @@
 
 <!-- ============ baraat feature ============ -->
 <aside class="feature" id="feature" hidden>
+  <span class="deco deco--mandap" aria-hidden="true"></span>
   <span class="feature__rule" aria-hidden="true"></span>
   <div class="feature__body">
     <p class="section__eyebrow">The main event</p>
@@ -148,6 +167,7 @@
 
 <!-- ============ venue ============ -->
 <section class="section section--tint" id="venue">
+  <span class="deco deco--jali" aria-hidden="true"></span>
   <p class="section__eyebrow">Where</p>
   <h2 class="section__title">Venue &amp; Directions</h2>
   <div class="venue-grid" id="venueGrid"></div>
@@ -223,11 +243,15 @@
 
 <!-- ============ verse ============ -->
 <section class="section section--verse" id="verse" hidden>
+  <span class="deco deco--arch" aria-hidden="true"></span>
   <p class="verse__text" id="verseText"></p>
 </section>
 
 <!-- ============ footer ============ -->
+<div class="deco deco--diyas" aria-hidden="true"></div>
 <footer class="footer">
+  <span class="deco deco--peacock deco--peacock--l" aria-hidden="true"></span>
+  <span class="deco deco--peacock deco--peacock--r" aria-hidden="true"></span>
   <p class="footer__hashtag" id="footHashtag"></p>
   <p class="footer__note" id="footContact"></p>
   <p class="footer__tiny">With love &amp; blessings</p>
@@ -254,6 +278,6 @@
 </div>
 
 <script src="data.js?v=40a6a197"></script>
-<script src="app.js?v=be601bfe"></script>
+<script src="app.js?v=c6c5eaac"></script>
 </body>
 </html>

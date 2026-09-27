@@ -18,6 +18,17 @@
   --blush-200: #f0d5dd;
   --butter:    #fbf0d9;
 
+  /* festive — marigold and gold. Kept as accents only: the sage/blush base
+     stays the page, these mark the celebratory moments (toran, diyas,
+     the main-event block) so "festive" reads as warmth rather than noise. */
+  --marigold:      #f0a72a;
+  --marigold-soft: #fdeccb;
+  --marigold-deep: #b8770f;
+  --gold:          #c9a227;
+  --gold-soft:     #f6ecc9;
+  --saffron:       #dd7a3c;
+  --saffron-soft:  #fbe4d3;
+
   /* text — warm near-black so it stays readable on every wash above */
   --ink:       #2e2b26;
   --ink-soft:  #57524a;
@@ -53,8 +64,9 @@ html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  /* clears the fixed action bar so it never sits on top of the footer */
-  padding-bottom: 104px;
+  /* clears the fixed action bar so it never sits on top of the footer. The
+     safe-area term keeps it clear of the iPhone home indicator too. */
+  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
   font-family: var(--sans);
   font-weight: 400;
   color: var(--ink);
@@ -65,6 +77,16 @@ body {
 }
 
 h1, h2, h3, h4 { font-family: var(--display); font-weight: 500; line-height: 1.1; margin: 0; }
+
+/* Display tracking. Cormorant is a high-contrast old-style with generous
+   sidebearings; at 40px+ the default spacing reads as loose rather than
+   grand, so the big sizes get pulled in. Small-caps labels go the other way
+   and are pushed out, which is where the letterforms were drawn to be used. */
+.hero__names   { letter-spacing: -.02em; }
+.section__title, .feature__title { letter-spacing: -.012em; }
+.count__num, .hero__day { letter-spacing: -.015em; font-feature-settings: "lnum" 1; }
+.family__names, .day-panel__title, .ritual__name, .venue__name { letter-spacing: -.005em; }
+
 a { color: var(--rose-deep); }
 img { max-width: 100%; display: block; }
 
@@ -73,6 +95,33 @@ img { max-width: 100%; display: block; }
   outline-offset: 3px;
   border-radius: 4px;
 }
+
+/* ------------------------------------------------------------- paper grain
+   A fixed noise wash over the whole page. It sits above everything, including
+   the action bar, because paper grain belongs on top of the ink — but it is
+   pointer-events: none, so it can never intercept a tap. Kept at a very low
+   opacity: enough to stop the flats reading as screen plastic, not enough to
+   read as noise on a cheap panel. */
+body::after {
+  content: "";
+  position: fixed; inset: 0; z-index: 200;
+  pointer-events: none;
+  opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ------------------------------------------------------------- scroll reveal
+   Progressive enhancement. The hiding rule is scoped to .js, which app.js adds
+   as its very first act — so if the script is blocked, fails to parse, or the
+   visitor has JS off, nothing is ever hidden. The page degrades to fully
+   visible rather than blank. */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .7s ease, transform .7s cubic-bezier(.22, 1, .36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.js [data-reveal].is-in { opacity: 1; transform: none; }
 
 /* ------------------------------------------------------------- ceremonial intro
    Plays once per visit. Three things retire it, so no single failure strands
@@ -352,9 +401,16 @@ img { max-width: 100%; display: block; }
 
 /* ------------------------------------------------------------- sections */
 .section { max-width: var(--maxw); margin: 0 auto; padding: 88px 24px; text-align: center; }
+/* The tint used to jump straight to sage on both edges. Fading to transparent
+   first, and carrying a marigold bloom through the middle, blends the section
+   into its neighbours instead of banding against them. */
 .section--tint {
   max-width: none; padding-inline: max(24px, calc((100% - var(--maxw)) / 2 + 24px));
-  background: linear-gradient(180deg, rgba(255,255,255,0), rgba(227, 234, 216, .38), rgba(255,255,255,0));
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(227, 234, 216, .34) 34%,
+    rgba(253, 236, 203, .30) 62%,
+    rgba(255, 255, 255, 0) 100%);
 }
 .section__title { font-size: clamp(1.9rem, 5.5vw, 2.9rem); font-weight: 400; color: var(--ink); }
 .section__sub {
@@ -555,7 +611,12 @@ img { max-width: 100%; display: block; }
 
 /* ------------------------------------------------------------- actions */
 .actions {
-  position: fixed; z-index: 30; left: 50%; bottom: 18px; transform: translateX(-50%);
+  position: fixed; z-index: 30; left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  /* the inset terms keep the bar off a landscape notch as well as the home bar */
+  margin-left: env(safe-area-inset-left, 0px);
+  margin-right: env(safe-area-inset-right, 0px);
+  transform: translateX(-50%);
   display: flex; gap: 4px; padding: 6px 10px;
   background: rgba(255, 255, 255, .94);
   border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow);
@@ -571,13 +632,144 @@ img { max-width: 100%; display: block; }
 .act:hover { background: var(--sage-50); color: var(--sage-700); }
 .act svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
+/* ------------------------------------------------------------- decoration
+   Discipline, because the previous version of this page was cluttered: every
+   decoration below is absolutely positioned, non-interactive, and sits at
+   z-index 0 with its content lifted to z-index 1. Nothing is ever placed on
+   top of text, and no decoration can widen the page. */
+
+.deco {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  z-index: 0;
+}
+
+/* toran — the marigold-and-scarf doorway hanging. In normal flow at the very
+   top, not fixed, so it can never sit over the topbar. */
+.deco--toran {
+  position: relative;
+  width: 100%;
+  height: 64px;
+  background-image: url("assets/toran.svg");
+  background-size: 640px 64px;
+  background-position: center top;
+  z-index: 1;
+}
+@media (max-width: 700px) {
+  .deco--toran { height: 48px; background-size: 480px 48px; }
+}
+
+/* mandala — watermark behind the names, the one place the hero earns texture */
+.deco--mandala {
+  inset: 0;
+  background-image: url("assets/mandala.svg");
+  background-size: min(78%, 330px);
+  opacity: .07;
+}
+
+/* corner flourishes on the hero card */
+.deco--corner {
+  width: 76px; height: 76px;
+  background-image: url("assets/corner.svg");
+  background-size: contain;
+  opacity: .3;
+}
+.deco--corner--tl { top: 12px;    left: 12px;   background-position: top left; }
+.deco--corner--tr { top: 12px;    right: 12px;  background-position: top right; transform: scaleX(-1); }
+.deco--corner--bl { bottom: 12px; left: 12px;   background-position: bottom left; transform: scaleY(-1); }
+.deco--corner--br { bottom: 12px; right: 12px;  background-position: bottom right; transform: scale(-1); }
+@media (max-width: 700px) {
+  .deco--corner { width: 52px; height: 52px; opacity: .24; }
+}
+
+/* jali — lattice screen, the texture of a venue wall. Venue section only. */
+.deco--jali {
+  inset: 0;
+  background-image: url("assets/jali.svg");
+  background-size: 340px;
+  background-position: center top;
+  opacity: .09;
+}
+
+/* mandap — behind the Baraat, the one genuinely celebratory block */
+.deco--mandap {
+  inset: -10% 0;
+  background-image: url("assets/mandap.svg");
+  background-size: min(88%, 360px);
+  opacity: .09;
+}
+
+/* hawa-arch — a delicate arch behind the verse, which is otherwise bare text */
+.deco--arch {
+  inset: 0;
+  background-image: url("assets/hawa-arch.svg");
+  background-size: min(52%, 240px);
+  background-position: center top;
+  opacity: .12;
+}
+
+/* diyas — a row of lit lamps above the footer, with a slow warm pulse */
+.deco--diyas {
+  position: relative;
+  width: 100%;
+  height: 72px;
+  background-image: url("assets/diyas.svg");
+  background-size: 520px 72px;
+  background-position: center bottom;
+  z-index: 1;
+  animation: diya-glow 3.4s ease-in-out infinite;
+}
+@keyframes diya-glow { 0%, 100% { opacity: .82; } 50% { opacity: 1; } }
+
+/* peacock — corner flourish on the footer */
+.deco--peacock {
+  width: 120px; height: 120px;
+  background-image: url("assets/peacock.svg");
+  background-size: contain;
+  opacity: .12;
+}
+.deco--peacock--l { bottom: 4px; left: 4px; background-position: bottom left; }
+.deco--peacock--r { bottom: 4px; right: 4px; background-position: bottom right; transform: scaleX(-1); }
+@media (max-width: 700px) {
+  .deco--diyas { height: 54px; background-size: 380px 54px; }
+  .deco--peacock { width: 78px; height: 78px; opacity: .1; }
+}
+
+/* divider — a small ornament between the hero band and the families */
+.deco--divider {
+  position: relative;
+  width: 150px; height: 26px;
+  margin: 0 auto;
+  background-image: url("assets/divider.svg");
+  background-size: contain;
+  z-index: 1;
+  opacity: .8;
+}
+
+/* Any element holding a decoration must lift its own content above it. */
+.hero__card > *:not(.deco),
+.families > *:not(.deco),
+.feature > *:not(.deco),
+.section > *:not(.deco),
+.section--verse > *:not(.deco),
+.footer > *:not(.deco) { position: relative; z-index: 1; }
+
+.hero__card, .families, .feature, .section, .section--verse, .footer { position: relative; overflow: hidden; }
+/* .feature and the section rules already centre their own content; making them
+   a clipping context must not change the box, so the ornaments bleed instead. */
+.feature { isolation: isolate; }
+
 /* ------------------------------------------------------------- responsive */
 @media (max-width: 900px) {
   .event__venue { margin-left: 0; text-align: left; }
 }
 
 @media (max-width: 700px) {
-  body { padding-bottom: 92px; }
+  body { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
 
   .hero { padding: 0 16px; margin-top: 20px; }
   .hero__card { padding: 42px 22px 38px; border-radius: var(--r); }
@@ -616,7 +808,7 @@ img { max-width: 100%; display: block; }
   .ritual { padding: 20px 12px; }
 
   .tab { min-width: 0; flex: 1 1 42%; padding: 12px 8px 14px; }
-  .actions { gap: 2px; padding: 6px; bottom: 10px; }
+  .actions { gap: 2px; padding: 6px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
   .act { width: 54px; font-size: .46rem; }
 }
 
@@ -627,14 +819,21 @@ img { max-width: 100%; display: block; }
      intro's outro from ever running, leaving it opaque and click-eating on
      screen forever, so it is removed from the page entirely instead. */
   .intro { display: none !important; }
+  /* The reveal hiding is a transition, which the blanket rule above has just
+     disabled. Without this the observer would leave every section at opacity 0
+     and the page would read as blank, so the end state is forced. */
+  .js [data-reveal] { opacity: 1 !important; transform: none !important; }
 }
 
 @media print {
-  .bg, .intro, .actions, .topbar, .hero__cta, .rsvp-form, .tabs, .saved { display: none !important; }
+  .bg, .intro, .actions, .topbar, .hero__cta, .rsvp-form, .tabs, .saved,
+  .deco, body::after { display: none !important; }
   body { background: #fff; padding-bottom: 0; }
   .section { padding: 18px 0; page-break-inside: avoid; }
   .hero__card { box-shadow: none; border: 1px solid #ddd; background: #fff; }
   .count, .event, .venue, .ritual { box-shadow: none; border-color: #ccc; }
   .day-panel[hidden] { display: block !important; }
   .day-panel + .day-panel { margin-top: 26px; border-top: 1px solid #ddd; padding-top: 20px; }
+  /* Nothing is animated on paper, so reveals must be pinned to their end state. */
+  .js [data-reveal] { opacity: 1 !important; transform: none !important; }
 }

@@ -59,7 +59,13 @@
   setText("heroBlessing", D["Opening Blessing Line"], "With the blessings of our families");
   setText("heroGroom", D["Groom Name"], "Groom");
   setText("heroBride", D["Bride Name"], "Bride");
-  setText("heroLine", D["Couple Line (short)"], "Together with their families");
+    /* Invitation Line, not Couple Line (short). The latter renders as "Suraj
+       weds Priyanka" directly beneath the names, which already read "Suraj &
+       Priyanka" — the same two names twice in three lines. The invitation
+       phrase completes the classic request structure instead: blessing above
+       the names, request below them. Falls back to the couple line, and then
+       to a generic phrase, so an empty workbook still renders a sensible line. */
+    setText("heroLine", D["Invitation Line"] || D["Couple Line (short)"], "Together with their families");
 
   var heroDate = D["Wedding Date"] || (events[0] && events[0].date) || "";
   if (heroDate) {

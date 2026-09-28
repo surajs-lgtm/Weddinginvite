@@ -568,10 +568,15 @@
   put("introBlessing", field("Opening Blessing Line") || "With the blessings of our families");
   put("introInvite", field("Invitation Line") || "request the honour of your presence");
 
-  /* Date and time only. The venue is deliberately left off the card: it was
-     removed from the hero at the couple's request, and repeating it here would
-     just reintroduce the detail they asked to take off. */
-  put("introDate", [field("Wedding Date"), field("Wedding Start Time")].filter(Boolean).join("  ·  "));
+  /* Date only: "Friday 11 Dec". The year and the start time are left off so
+     the card carries the one thing a guest checks first, and nothing else.
+
+     This is a card-local value on purpose. The workbook's "Wedding Date" is
+     12 Dec, which is the Vidai (Milap) and is what the countdown and the day
+     tabs are built from; the day printed on the card is the wedding itself, on
+     Friday 11 Dec 2026. Keep them separate rather than reconciling the data,
+     because moving the field would move the whole schedule with it. */
+  put("introDate", "Friday 11 Dec");
 
   /* Drop a line rather than print an empty one. A wedding card with a blank
      ruled space looks like a bug; a shorter card looks intentional. */

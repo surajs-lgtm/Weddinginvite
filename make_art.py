@@ -488,13 +488,22 @@ def build_icons():
         f'<path d="M28 51h8" />'
         f'<path d="M18 22l24 8M22 18l20 9M14 28l28 4" opacity=".4"/>')
 
-    # Madwa - the fire kindled before the wedding
+    # Madwa - the temporary bamboo canopy raised for the wedding, pitched roof
+    # on four poles with mango and banana leaves hung along the eaves
     ic["madwa"] = icon(
-        f'<path d="M20 54h24v-4H20z"/>'
-        f'<path d="M22 50h20l-3-8H25z" opacity=".5"/>'
-        f'<path d="M32 8c-6 8-11 12-11 19a11 11 0 0 0 22 0c0-7-5-11-11-19z" {SF} opacity=".9"/>'
-        f'<path d="M32 26c-3 4-4 6-4 8a4 4 0 0 0 8 0c0-2-1-4-4-8z" fill="#fdf6e9" stroke="none"/>'
-        f'<path d="M14 58h36" />')
+        f'<path d="M5 31 14 16h36l9 15"/>'
+        f'<path d="M14 16h36" opacity=".45"/>'
+        f'<path d="M9.5 23.5 16 18.5M54.5 23.5 48 18.5" opacity=".3"/>'
+        f'<path d="M5 31h54"/>'
+        f'<path d="M14 31v23M50 31v23"/>'
+        f'<path d="M11 54h6M47 54h6" opacity=".5"/>'
+        f'<path d="M14 43h36" opacity=".35"/>'
+        f'<ellipse cx="18" cy="36" rx="2" ry="3.6" transform="rotate(-22 18 36)" opacity=".5"/>'
+        f'<ellipse cx="25" cy="35" rx="2" ry="3.4" opacity=".45"/>'
+        f'<ellipse cx="32" cy="36.5" rx="2" ry="3.8" transform="rotate(8 32 36.5)" opacity=".5"/>'
+        f'<ellipse cx="39" cy="35" rx="2" ry="3.4" opacity=".45"/>'
+        f'<ellipse cx="46" cy="36" rx="2" ry="3.6" transform="rotate(22 46 36)" opacity=".5"/>'
+        f'<path d="M8 58h48" opacity=".4"/>')
 
     # Haldi - a bowl of turmeric paste
     ic["haldi"] = icon(

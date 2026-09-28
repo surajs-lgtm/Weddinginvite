@@ -50,10 +50,6 @@ rows = [
     ("Primary Venue Name", FILLIN, "Wedding / main function venue"),
     ("Primary Venue Address", FILLIN, "Full address for the website"),
     ("Google Maps Link", FILLIN, "Paste a maps.app.goo.gl or google.com/maps link"),
-    ("Other Venue 1 Name", FILLIN, "Optional: haldi or baraat venue"),
-    ("Other Venue 1 Address", FILLIN, "Optional"),
-    ("Other Venue 2 Name", FILLIN, "Optional"),
-    ("Other Venue 2 Address", FILLIN, "Optional"),
     ("Contact Name", FILLIN, "Who answers RSVP calls"),
     ("Contact Phone", FILLIN, "With country code, e.g. +91 98765 43210"),
     ("WhatsApp Number", FILLIN, "With country code; powers the RSVP button"),
@@ -140,31 +136,9 @@ ws2.add_data_validation(dv_v)
 dv_v.add("G2:G200")
 
 # ---------------------------------------------------------------- Venues
-ws3 = wb.create_sheet("Venues")
-vrows = [
-    ("Name", "Address", "Google Maps Link", "Which functions"),
-    (FILLIN, FILLIN, "", "Wedding / main function"),
-    (FILLIN, FILLIN, "", "Functions held elsewhere"),
-    (FILLIN, FILLIN, "", "Optional"),
-]
-for r in vrows:
-    ws3.append(list(r))
-for c in ws3[1]:
-    c.font = head_font
-    c.fill = head_fill
-    c.border = border
-    c.alignment = Alignment(horizontal="center", vertical="center")
-for row in ws3.iter_rows(min_row=2):
-    for c in row:
-        c.border = border
-        c.alignment = wrap
-    for c in (row[0], row[1]):
-        if isinstance(c.value, str) and c.value.strip() == FILLIN:
-            c.font = fill_font
-            c.fill = fill_fill
-for col, w in zip("ABCD", (28, 46, 34, 30)):
-    ws3.column_dimensions[col].width = w
-ws3.freeze_panes = "A2"
+# Not created: every function is at the primary venue, so a separate venue
+# table would only ever hold placeholders. build_site.py reads the sheet only
+# if it exists, and the page falls back to Primary Venue Name / Address.
 
 # ---------------------------------------------------------------- RSVP
 ws4 = wb.create_sheet("RSVP List")
@@ -197,7 +171,7 @@ ws4.freeze_panes = "A2"
 ws5 = wb.create_sheet("How To Use")
 help_rows = [
     ("1. EDIT HERE", ""),
-    ("Fill in every '-- FILL IN --' cell on the Wedding Details and Venues sheets.", ""),
+    ("Fill in every '-- FILL IN --' cell on the Wedding Details sheet.", ""),
     ("", ""),
     ("2. SYNC TO WEBSITE", ""),
     ("Save this file, then run:", "python3 build_site.py"),

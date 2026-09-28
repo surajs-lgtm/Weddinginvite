@@ -539,7 +539,18 @@ body::after {
      other (114px of vertical padding before, 106px now) rather than the top
      simply being cut, so the card height — and therefore the 58% band, which is
      a share of it — barely moves. */
-  padding: 44px 44px 62px;
+  /* Bottom padding traded against .hero__line's top margin. This is the lever
+     that lowers the closing line: cut here, add the same amount to .hero__line
+     above, and the line drops while the card height — and therefore the 58%
+     portrait band, which is a share of it — stays put. Never cut this padding
+     on its own; that grows the card and rescales the photo.
+
+     History: 62/26 -> 44/44 -> 26/62 -> 10/78. The sum has been 88px at every
+     step. At 10px the line's descenders sit about 10px off the border, which is
+     the tightest this card has been. It reads as deliberate only while the
+     line is centred and short; on a narrow phone it will touch the bottom
+     padding's edge, so check it there before shipping. */
+  padding: 44px 44px 10px;
   text-align: center;
   background: var(--card);
   border: 1px solid var(--line-soft);
@@ -568,9 +579,20 @@ body::after {
   font-size: .52em; color: var(--sage-500);
 }
 
+/* The closing request. It is the last child of the card, so its distance from
+   the foot is whatever the card's bottom padding leaves, and the space above it
+   is the margin here. Lowering the line means raising this and cutting the
+   padding by the same amount, never the padding alone, or the card grows and
+   the portrait band (58% of the card) scales with it.
+
+   It now sits low enough to be over the photograph, where the band's white
+   wash has already faded out, so it carries a soft shadow. That is the first
+   text-shadow in the stylesheet: it is needed only here, because this is the
+   only type that overlaps the picture with nothing behind it. */
 .hero__line {
   font-family: var(--display); font-style: italic; font-weight: 400;
-  font-size: 1.2rem; color: var(--ink-soft); margin: 20px 0 0;
+  font-size: 1.2rem; color: var(--ink-soft); margin: 78px 0 0;
+  text-shadow: 0 1px 10px rgba(255, 255, 255, .95), 0 0 3px rgba(255, 255, 255, .8);
 }
 
 .hero__date {

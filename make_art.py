@@ -541,17 +541,6 @@ def build_icons():
         f'<ellipse cx="32" cy="14" rx="9" ry="4" opacity=".35"/>'
         f'<path d="M20 46h24" opacity=".45"/>')
 
-    # Bardekhai - a decorated pot under a mango-leaf garland
-    ic["bardekhai"] = icon(
-        f'<path d="M16 32c0 4-1 6-2 8-3 5-4 9-4 14 0 6 2 9 6 10h32c4-1 6-4 6-10 0-5-1-9-4-14-1-2-2-4-2-8z" {SF} opacity=".2"/>'
-        f'<path d="M16 32h32"/>'
-        f'<path d="M22 28c1-4 5-6 10-6s9 2 10 6"/>'
-        f'<path d="M32 6v8" opacity=".5"/>'
-        f'<path d="M32 14c-4-4-8-5-10-4 2 3 5 5 10 4z" opacity=".6"/>'
-        f'<path d="M32 14c4-4 8-5 10-4-2 3-5 5-10 4z" opacity=".6"/>'
-        f'<path d="M32 14c-3-3-4-7-3-9 2 2 3 5 3 9z" opacity=".5"/>'
-        f'<path d="M18 48h28" opacity=".4"/>')
-
     # Parat - a gold tray with a mound of rice
     ic["parat"] = icon(
         f'<ellipse cx="32" cy="42" rx="24" ry="7" {SF} opacity=".25"/>'

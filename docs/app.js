@@ -229,18 +229,33 @@
   markLive();
   setInterval(markLive, 60000);
 
-  /* ============================================================ icons */
-  /* Icon markup is inlined by build_site.py. The drawings are stroked with
-     currentColor, so an <img> would render them black instead of themed
-     maroon. If a row somehow has no icon, fall back to a plain frame. */
-  var EMPTY_ICON =
-    '<svg class="icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" ' +
-    'stroke-width="1.8" aria-hidden="true" focusable="false">' +
-    '<circle cx="32" cy="32" r="20" opacity=".45"/>' +
-    '<path d="M32 20v24M20 32h24" opacity=".45"/></svg>';
-
   function iconMarkup(ev) {
-    return ev && ev.iconSvg ? ev.iconSvg : EMPTY_ICON;
+    return ev && ev.iconSvg ? ev.iconSvg : emptyIcon();
+  }
+
+  /* The neutral frame for a function with no drawing of its own. A function,
+     not a var holding a string, because the schedule is rendered further up
+     this same scope (the day panels, ~line 171) and a `var` is hoisted without
+     its value: reading it from there returned undefined, and the literal text
+     "undefined" landed in the icon slot for every event without an icon. Four
+     of the thirteen functions had no drawing, so it was visible. Returning the
+     markup keeps the fallback independent of statement order. */
+  function emptyIcon() {
+    /* Generic enough to stand in for any function, so a row added to the
+       workbook without a matching drawing still gets a mark rather than a gap.
+       The loop of petals around a centre is deliberately not tied to one
+       ritual: it reads as a flower, a thali and a lamp at the size it draws. */
+    var petals = "";
+    for (var i = 0; i < 8; i++) {
+      petals += '<ellipse cx="32" cy="19" rx="4" ry="8" transform="rotate(' +
+        (i * 45) + ' 32 32)" opacity=".45"/>';
+    }
+    return '<svg class="icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ' +
+      'aria-hidden="true" focusable="false">' +
+      petals +
+      '<circle cx="32" cy="32" r="6" fill="currentColor" opacity=".7"/>' +
+      '<circle cx="32" cy="32" r="24" opacity=".25"/></svg>';
   }
 
   /* ============================================================ rituals */

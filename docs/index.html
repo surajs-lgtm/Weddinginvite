@@ -17,42 +17,131 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=ba3a90e4">
+<link rel="stylesheet" href="styles.css?v=5d8c5e50">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
 
-<!-- ============ ceremonial intro ============
-     Plays once per visit, then removes itself. Decoration only: it holds no
-     focusable elements, and the CSS animation ends it on its own even if the
-     script below never runs. -->
-<div class="intro" id="intro" aria-hidden="true">
-  <div class="intro__glow"></div>
+  <!-- ============ card-opening intro ============
+       A physical-style Indian wedding card in two beats. The cover carries the
+       gold framing, the gavaksha arch and "Shubh Vivah"; the inner face
+       carries the printed invitation and a Continue control. The cover is a
+       full-size panel hinged on the left edge, so it swings open like a card
+       rather than sliding, and nothing of the inner face shows while closed.
 
-  <div class="intro__stage">
-    <svg class="intro__arch" viewBox="0 0 220 300" focusable="false">
-      <path class="intro__draw intro__draw--outer" pathLength="100"
-            d="M18 286V142C18 100 44 78 66 92C80 101 86 74 100 62C106 57 110 52 110 44C110 52 114 57 120 62C134 74 140 101 154 92C176 78 202 100 202 142V286"/>
-      <path class="intro__draw intro__draw--inner" pathLength="100"
-            d="M34 286V148C34 114 58 98 80 106C92 110 102 94 110 86C118 94 128 110 140 106C162 98 186 114 186 148V286"/>
-      <circle class="intro__draw intro__draw--finial" pathLength="100" cx="110" cy="30" r="4.5"/>
-      <path class="intro__draw intro__draw--base" pathLength="100" d="M8 286H212"/>
-    </svg>
+       Two taps, in this order, and never a dead end:
+         1. "Open the wedding invitation" lifts the cover.
+          2. "Open Invitation" then reveals the site.
+       Between them the inner face is given time to settle, because arriving
+       all at once reads as a glitch. A guest who never taps either is carried
+       through by the CSS timings, so the site still appears on its own.
 
-    <div class="intro__diya">
-      <svg viewBox="0 0 80 62" focusable="false">
-        <path class="intro__flame" d="M40 6C46 15 51 21 51 28a11 11 0 0 1-22 0C29 21 34 15 40 6Z"/>
-        <path class="intro__bowl" d="M10 34h60c0 12-13 20-30 20s-30-8-30-20Z"/>
-        <path class="intro__rim" d="M6 34h68"/>
-      </svg>
+       The card is a <div> with two sibling buttons rather than one <button>
+       wrapping the lot, because a button inside a button is invalid and the
+       inner face needs its own control.
+
+       Audio: browsers block sound that does not begin inside a real user
+       gesture, so the flute starts on the first tap and never otherwise. -->
+  <div class="intro" id="intro">
+    <div class="intro__glow" aria-hidden="true"></div>
+
+    <div class="card" id="introCard">
+      <!-- inner face -->
+      <div class="card__base">
+        <span class="card__blessing" id="introBlessing">With the blessings of our families</span>
+
+        <span class="card__parents">
+          <span class="card__parent">
+            <span class="card__role">Groom&rsquo;s Parents</span>
+            <span class="card__pname" id="introParentsGroom">&amp;</span>
+          </span>
+          <span class="card__parent">
+            <span class="card__role">Bride&rsquo;s Parents</span>
+            <span class="card__pname" id="introParentsBride">&amp;</span>
+          </span>
+        </span>
+
+        <span class="card__names">
+          <span class="card__gname" id="introGroom">&amp;</span>
+          <span class="card__amp" aria-hidden="true">&amp;</span>
+          <span class="card__bname" id="introBride">&amp;</span>
+        </span>
+
+        <span class="card__invite" id="introInvite">request the honour of your presence</span>
+        <span class="card__when" id="introDate"></span>
+
+        <button class="card__go" id="introGo" type="button" tabindex="-1">
+          Open Invitation
+        </button>
+
+        <span class="card__corner card__corner--tl" aria-hidden="true"></span>
+        <span class="card__corner card__corner--tr" aria-hidden="true"></span>
+        <span class="card__corner card__corner--bl" aria-hidden="true"></span>
+        <span class="card__corner card__corner--br" aria-hidden="true"></span>
+      </div>
+
+      <!-- cover -->
+      <div class="card__leaf" aria-hidden="true">
+        <span class="card__crown">
+          <svg class="card__arch" viewBox="0 0 220 300" focusable="false">
+            <path class="card__draw card__draw--outer" pathLength="100"
+                  d="M18 286V142C18 100 44 78 66 92C80 101 86 74 100 62C106 57 110 52 110 44C110 52 114 57 120 62C134 74 140 101 154 92C176 78 202 100 202 142V286"/>
+            <path class="card__draw card__draw--inner" pathLength="100"
+                  d="M34 286V148C34 114 58 98 80 106C92 110 102 94 110 86C118 94 128 110 140 106C162 98 186 114 186 148V286"/>
+            <circle class="card__draw card__draw--finial" pathLength="100" cx="110" cy="30" r="4.5"/>
+            <path class="card__draw card__draw--base" pathLength="100" d="M8 286H212"/>
+          </svg>
+          <!-- Ganesha, seated inside the arch on the cover. Drawn to the same
+               weight and gold as the arch so it reads as part of one print
+               rather than a sticker dropped on top. One tusk, by tradition. -->
+          <span class="card__deity" aria-hidden="true">
+            <svg class="card__ganesh" viewBox="22 10 156 190" focusable="false">
+              <path d="M74 54C82 30 118 30 126 54"/>
+              <path d="M100 16l7 15H93z"/>
+              <path d="M82 44c4 5 9 7 18 7s14-2 18-7"/>
+              <path d="M72 72C50 56 30 68 33 94c2 22 17 33 38 29"/>
+              <path d="M128 72c22-16 42-4 39 22-2 22-17 33-38 29"/>
+              <circle cx="100" cy="88" r="30"/>
+              <path d="M80 74c6-4 13-4 18 0"/>
+              <path d="M102 74c5-4 12-4 18 0"/>
+              <path d="M84 86c3-5 10-5 13 0"/>
+              <path d="M103 86c3-5 10-5 13 0"/>
+              <path d="M120 98c7 5 9 14 4 21"/>
+              <path d="M100 94v40c0 14-9 22-20 22-9 0-15-6-15-14"/>
+              <path d="M100 118c-19 0-33 15-33 34s14 33 33 33 33-14 33-33-14-34-33-34z"/>
+              <path d="M70 142c-11 6-17 16-17 27"/>
+              <path d="M130 142c11 6 17 16 17 27"/>
+              <circle cx="147" cy="176" r="7"/>
+              <path d="M58 192c0-12 10-18 18-12 4-10 16-10 20 0 8-6 18 0 18 12"/>
+              <path d="M62 192h76"/>
+            </svg>
+          </span>
+        </span>
+        <span class="card__deva">शुभ विवाह</span>
+        <span class="card__latin">Shubh Vivah</span>
+        <span class="card__rule" aria-hidden="true"></span>
+        <span class="card__diya" aria-hidden="true">
+          <svg viewBox="0 0 80 62" focusable="false">
+            <path class="card__flame" d="M40 6C46 15 51 21 51 28a11 11 0 0 1-22 0C29 21 34 15 40 6Z"/>
+            <path class="card__bowl" d="M10 34h60c0 12-13 20-30 20s-30-8-30-20Z"/>
+            <path class="card__rim" d="M6 34h68"/>
+          </svg>
+        </span>
+        <span class="card__corner card__corner--tl"></span>
+        <span class="card__corner card__corner--tr"></span>
+        <span class="card__corner card__corner--bl"></span>
+        <span class="card__corner card__corner--br"></span>
+      </div>
+
+      <!-- the tap target for beat one; covers the closed card -->
+      <button class="card__open" id="introOpen" type="button"
+              aria-label="Open the wedding invitation"></button>
+
+      <span class="card__seal" aria-hidden="true">Open</span>
     </div>
 
-      <p class="intro__line">Shubh Vivah</p>
-    <p class="intro__names">
-      <span id="introGroom">&amp;</span><span class="intro__amp" aria-hidden="true">&amp;</span><span id="introBride">&amp;</span>
-    </p>
+    <p class="card__hint" id="introHint" aria-hidden="true">Tap the card to open</p>
   </div>
-</div>
 
 <!-- ============ toran ============
      In normal flow, ahead of the topbar, so it can never overlap anything. The
@@ -100,7 +189,10 @@
       <span class="hero__year" id="heroYear"></span>
     </div>
 
-    <p class="hero__venue" id="heroVenue"></p>
+    <!-- The venue used to sit here as a line under the date. Removed from the
+         card deliberately: the picture band directly below was being read as
+         the venue's, so the name competed with it. The full address, map and
+         directions still live in the Venue section. -->
   </div>
 
   <!-- Moved out of .hero__card. The couple portrait is absolutely positioned
@@ -181,12 +273,21 @@
 </section>
 
 <!-- ============ rituals ============ -->
-<section class="section" id="rituals">
-  <p class="section__eyebrow">Traditions</p>
-  <h2 class="section__title">The Rituals We Honour</h2>
-  <p class="section__sub">Each day carries its own custom. Here is what each function means, so you know what you are joining.</p>
-  <div class="ritual-grid" id="ritualGrid"></div>
-</section>
+  <!-- Replaces the old "The Rituals We Honour" grid. That section promised to
+       explain what each function means but rendered only a name and a date, and
+       repeated the Schedule's twelve events. This panel is built from the one
+       thing the page had no home for: a single ashirwad line.
+
+       Deliberately not the hero's "With the blessings of our families" and not
+       the parents' names, which #families already carries. Repeating either
+       here would reintroduce exactly the duplication this replaced. -->
+  <section class="section section--blessings" id="blessings" hidden>
+    <span class="deco deco--mandala" aria-hidden="true"></span>
+    <p class="section__eyebrow">Ashirwad</p>
+    <h2 class="section__title">Blessings for the Journey Ahead</h2>
+    <p class="blessings__text" id="ashirwadText"></p>
+  </section>
+
 
 <!-- ============ RSVP ============ -->
 <section class="section section--tint" id="rsvp">
@@ -278,13 +379,24 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
     <span>Map</span>
   </a>
-  <a class="act" id="waFloat" href="#" target="_blank" rel="noopener" title="WhatsApp" hidden>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 0 1-11.9 7L4 20l1.1-4A8 8 0 1 1 20 12z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5"/></svg>
-    <span>WhatsApp</span>
-  </a>
-</div>
+    <a class="act" id="waFloat" href="#" target="_blank" rel="noopener" title="WhatsApp" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 0 1-11.9 7L4 20l1.1-4A8 8 0 1 1 20 12z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5"/></svg>
+      <span>WhatsApp</span>
+    </a>
+    <button class="act" id="soundBtn" type="button" title="Mute music" aria-pressed="false" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="act__wave" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+      <span>Sound</span>
+    </button>
+  </div>
 
-<script src="data.js?v=45c64518"></script>
-<script src="app.js?v=b8841a4c"></script>
+  <!-- Flute. There is no autoplay path: browsers block sound that does not
+       begin inside a real user gesture, and the only gesture here is opening
+       the card. A missing file is not an error — the player stays hidden and
+       the card opens exactly as it would with music. -->
+  <audio id="flute" src="assets/audio/flute.mp3" preload="auto"></audio>
+
+
+<script src="data.js?v=b2707c4e"></script>
+<script src="app.js?v=512b70fd"></script>
 </body>
 </html>

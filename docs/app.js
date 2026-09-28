@@ -76,7 +76,6 @@
       setText("heroYear", hd.getFullYear());
     }
   }
-  setText("heroVenue", D["Primary Venue Name"] ? [D["Primary Venue Name"], D["City"]].filter(Boolean).join(", ") : "");
   setText("topHashtag", D["Hashtag"]);
   setText("footHashtag", D["Hashtag"]);
   setText("footContact", [D["Contact Name"], D["Contact Phone"]].filter(Boolean).join(" · "));
@@ -247,29 +246,22 @@
   /* ============================================================ rituals */
   /* One card per ritual, so a guest who does not know the customs can read
      what the function is about before they arrive. */
-  function renderRituals() {
-    var grid = $("ritualGrid");
-    if (!grid) return;
-    var seen = {};
-    var cards = [];
-    events.forEach(function (ev) {
-      if (!ev.icon || seen[ev.icon]) return;
-      seen[ev.icon] = true;
-      cards.push({
-        svg: ev.iconSvg,
-        name: ev.event,
-        when: niceDate(ev.date, { day: "numeric", month: "short" }),
-      });
-    });
-    $("rituals").hidden = cards.length === 0;
-    grid.innerHTML = cards.map(function (c) {
-      return '<div class="ritual">' +
-        '<div class="ritual__icon" aria-hidden="true">' + iconMarkup(c) + "</div>" +
-        '<p class="ritual__name">' + esc(c.name) + "</p>" +
-        '<p class="ritual__when">' + esc(c.when) + "</p>" +
-        "</div>";
-    }).join("");
-  }
+  /* ============================================================ blessings
+     Replaces renderRituals. The old grid rendered one card per function —
+     a name and a date, twelve of them — which repeated the Schedule and
+     never actually explained the rituals as its own copy claimed to. This
+     renders a single ashirwad line instead.
+
+     Stays hidden when the line is empty, so a workbook with the field left
+     blank does not leave an "Ashirwad" heading over nothing. */
+  (function renderBlessings() {
+    var sec = $("blessings");
+    var el = $("ashirwadText");
+    if (!sec || !el) return;
+    var line = (D["Ashirwad Line"] || "").trim();
+    el.textContent = line;
+    sec.hidden = !line;
+  })();
 
   /* ============================================================ venues */
   var vgrid = $("venueGrid");
@@ -484,7 +476,6 @@
 
   /* Rendered before initReveal below, so the ritual cards exist in the DOM by
      the time it goes looking for targets to animate. */
-  renderRituals();
 
   /* ============================================================ scroll reveal
      Runs last, so every card the renderers created is in the DOM before it
@@ -503,7 +494,7 @@
 
     var blocks = [
       ".hero__card", ".hero__cta", ".countdown", ".banner", ".families",
-      "#schedule", "#feature", "#venue", "#rituals", "#rsvp", "#verse", ".footer"
+      "#schedule", "#feature", "#venue", "#blessings", "#rsvp", "#verse", ".footer"
     ].join(",");
     var nodes = Array.prototype.slice.call(document.querySelectorAll(blocks))
       .concat(Array.prototype.slice.call(document.querySelectorAll(".event, .ritual, .venue, .count")))
@@ -542,15 +533,20 @@
   })();
 })();
 
-/* ============================================================ ceremonial intro
-   Two independent mechanisms retire the overlay, so a failure in either is
-   harmless. The CSS outro holds `opacity: 0; visibility: hidden` on its own
-   (fill-mode forwards), and this removes the node outright a beat later. The
-   timer is the backstop for the one case CSS cannot cover: a tab backgrounded
-   at load, where some browsers never start the first animation at all.
+/* ============================================================ card intro
+   Two beats. Tap one lifts the cover; tap two reveals the site. In between,
+   the inner face is given time to settle — arriving all at once reads as a
+   glitch rather than a card opening.
 
-   Nothing inside the overlay is focusable, so it cannot trap a keyboard user,
-   and a click anywhere skips it. */
+   Both beats are optional. The CSS timings carry the identical sequence on
+   their own, and the Continue control is display:none without script, so a
+   guest who never taps anything still gets to the site and never sees a
+   control that cannot be pressed. That matters because the old intro's
+   `pointer-events: none` guarantee is gone the moment the card is tappable.
+
+   The tap that opens the cover is also the only thing that can start the
+   music, because browsers refuse to play sound that did not begin inside a
+   real user gesture. There is no autoplay path to guard against. */
 (function () {
   "use strict";
 
@@ -558,39 +554,189 @@
   if (!intro) return;
 
   var D = (window.WEDDING_DATA || {}).details || {};
-  var groom = String(D["Groom Name"] || "").trim();
-  var bride = String(D["Bride Name"] || "").trim();
-
-  var line = intro.querySelector(".intro__names");
-  if (groom && bride) {
-    document.getElementById("introGroom").textContent = groom;
-    document.getElementById("introBride").textContent = bride;
-  } else if (line) {
-    /* Never show a lone ampersand if a name is missing from the workbook. */
-    line.remove();
+  function field(name) { return String(D[name] || "").trim(); }
+  function put(id, value) {
+    var el = document.getElementById(id);
+    if (el && value) el.textContent = value;
+    return !!value;
   }
 
-  /* Plays on every load, including a refresh. It used to be suppressed for
-     the rest of the session via sessionStorage, which meant a guest who
-     reloaded or followed an #rsvp link never saw it again. */
-  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduce) { intro.remove(); return; }
+  put("introGroom", field("Groom Name"));
+  put("introBride", field("Bride Name"));
+  put("introParentsGroom", field("Groom's Parents"));
+  put("introParentsBride", field("Bride's Parents"));
+  put("introBlessing", field("Opening Blessing Line") || "With the blessings of our families");
+  put("introInvite", field("Invitation Line") || "request the honour of your presence");
 
+  /* Date and time only. The venue is deliberately left off the card: it was
+     removed from the hero at the couple's request, and repeating it here would
+     just reintroduce the detail they asked to take off. */
+  put("introDate", [field("Wedding Date"), field("Wedding Start Time")].filter(Boolean).join("  ·  "));
+
+  /* Drop a line rather than print an empty one. A wedding card with a blank
+     ruled space looks like a bug; a shorter card looks intentional. */
+  ["introParentsGroom", "introParentsBride"].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el && !el.textContent.trim() && el.parentNode) el.parentNode.remove();
+  });
+  if (!intro.querySelector(".card__parent")) {
+    var parents = intro.querySelector(".card__parents");
+    if (parents) parents.remove();
+  }
+
+  /* Reduced motion means no card at all — the page is simply the page. */
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    intro.remove();
+    return;
+  }
+
+  var openBtn = document.getElementById("introOpen");
+  var goBtn = document.getElementById("introGo");
   var done = false;
+  var started = false;
+  /* Every safety-net timer, so the first real interaction can cancel all of
+     them. Without this the no-interaction fallback keeps counting from page
+     load and cuts a guest off mid-reveal: someone who reads the card for ten
+     seconds and then taps gets the site pulled out from under the opening
+     cover, 3.1s later, while the inner face is still staggering in. */
+  var nets = [];
+
+  function net(fn, ms) {
+    var id = setTimeout(fn, ms);
+    nets.push(id);
+    return id;
+  }
+  function clearNets() {
+    nets.forEach(function (id) { clearTimeout(id); });
+    nets = [];
+  }
+
   function dismiss() {
     if (done) return;
     done = true;
+    clearNets();
     intro.remove();
   }
 
-  /* No click handler: the overlay is `pointer-events: none` so it can never
-     intercept a tap meant for the page underneath. The timer is the real
-     guarantee, and it is re-armed on the way back into the foreground because
-     a tab that was hidden at load often never starts its first animation at
-     all, which would otherwise leave the card sitting on screen. */
-  setTimeout(dismiss, 2600);
+  /* Beat two: hand the site over. */
+  function proceed() {
+    if (done) return;
+    intro.classList.add("is-going");
+    if (goBtn) goBtn.disabled = true;
+    setTimeout(dismiss, 950);
+  }
+
+  /* Beat one: lift the cover and start the music. Driven entirely by a click —
+     the card, the Open control, or anywhere on the overlay. */
+  function open() {
+    if (done || started) return;
+    started = true;
+    clearNets();
+    intro.classList.add("is-open");
+    if (openBtn) openBtn.disabled = true;
+    playFlute();
+    /* From here the invitation only moves on because the guest asks it to. The
+       one long timer left in the file is a bail-out, not a UX path: if the
+       Continue control's handler is ever broken, the overlay lets go after a
+       minute instead of trapping the guest on it. */
+    net(dismiss, 60000);
+    /* Move focus off the now-disabled first control and onto the second, so a
+        keyboard guest is not dropped back to the top of the document. Deferred
+        to match the 2.4s reveal in the stylesheet — focusing a control that is
+        still at opacity 0 would move the caret somewhere the guest cannot see.
+        focus-visible keeps the ring off for anyone who got here with a
+        pointer. */
+    if (goBtn) {
+      setTimeout(function () {
+        if (done) return;
+        goBtn.removeAttribute("tabindex");
+        goBtn.focus({ preventScroll: true });
+      }, 2400);
+    }
+  }
+
+  if (openBtn) openBtn.addEventListener("click", open);
+  if (goBtn) goBtn.addEventListener("click", proceed);
+  /* "or anywhere on the page": a click on the overlay background — not just the
+     card itself — lifts the cover. The guard inside open() makes this a no-op
+     once the cover is up, so it can never race the Continue control. */
+  intro.addEventListener("click", open);
+
+  /* Click-driven, so there is no auto-advance left to cancel. The only timer
+     left is one long bail-out, armed at load and re-armed on the way back from
+     a backgrounded tab, so a guest who never touches anything still reaches the
+     site instead of being stranded on the cover. It sits far beyond any real
+     reading time and the first tap clears it. */
+  net(dismiss, 60000);
+  window.addEventListener("load", function () { net(dismiss, 60000); });
   document.addEventListener("visibilitychange", function () {
-    if (!document.hidden) setTimeout(dismiss, 120);
+    /* A tab backgrounded at load can leave the very first animation unstarted,
+       which is the one case CSS cannot rescue. Re-arm on the way back rather
+       than cutting the card short: a guest who glanced at another tab should
+       still find the card waiting, and still be able to open it — which
+       matters, because the tap is the only thing that can start the music. */
+    if (document.hidden || done || started) return;
+    net(dismiss, 60000);
   });
-  window.addEventListener("load", function () { setTimeout(dismiss, 2600); });
+
+  /* ============================================================ music
+     Deliberately minimal, because the one thing that must not happen is a
+     broken card. A missing file, a rejected play(), or a browser with no
+     support all resolve to the same outcome: the card opens, and the sound
+     control simply never appears.
+
+     Muted preference is remembered, so a guest who turned it off is not
+     ambushed by it on the next visit. */
+  var audio = document.getElementById("flute");
+  var soundBtn = document.getElementById("soundBtn");
+  var KEY = "wedding-muted-v1";
+  var muted = false;
+  try { muted = localStorage.getItem(KEY) === "1"; } catch (e) { /* private mode */ }
+
+  function showSound() {
+    if (soundBtn) { soundBtn.hidden = false; paint(); }
+  }
+  function paint() {
+    if (!soundBtn) return;
+    soundBtn.setAttribute("aria-pressed", muted ? "true" : "false");
+    soundBtn.title = muted ? "Play music" : "Mute music";
+    var label = soundBtn.querySelector("span");
+    if (label) label.textContent = muted ? "Muted" : "Sound";
+  }
+
+  function playFlute() {
+    /* The one gate. Sound cannot start without a gesture, and the only
+       gesture that counts is opening the card. */
+    if (!audio || muted || !started) return;
+    var p;
+    try { p = audio.play(); } catch (e) { return; }
+    if (p && typeof p.then === "function") {
+      p.then(showSound).catch(function () { /* no file, or blocked */ });
+    }
+  }
+
+  if (soundBtn) {
+    paint();
+    soundBtn.addEventListener("click", function () {
+      muted = !muted;
+      try { localStorage.setItem(KEY, muted ? "1" : "0"); } catch (e) { /* ignore */ }
+      if (muted) {
+        try { audio.pause(); } catch (e) { /* ignore */ }
+      } else {
+        playFlute();
+      }
+      paint();
+    });
+  }
+
+  /* Never keep playing into a backgrounded tab, and never start it there
+     either — resuming is gated on `started`, the same gesture flag that gates
+     the first note. */
+  document.addEventListener("visibilitychange", function () {
+    if (!audio) return;
+    if (document.hidden) { try { audio.pause(); } catch (e) { /* ignore */ } }
+    else if (started && !muted && !audio.ended) {
+      try { audio.play().catch(function () {}); } catch (e) { /* ignore */ }
+    }
+  });
 })();

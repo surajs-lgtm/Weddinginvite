@@ -25,6 +25,10 @@
   --marigold-soft: #fdeccb;
   --marigold-deep: #b8770f;
   --gold:          #c9a227;
+  /* Foil tones for the wedding card. Separate from --gold because foil on a
+     dark maroon ground has to be lighter to read as metal rather than mud. */
+  --maroon:        #7e1f2b;
+  --gold-light:    #e3c766;
   --gold-soft:     #f6ecc9;
   --saffron:       #dd7a3c;
   --saffron-soft:  #fbe4d3;
@@ -85,7 +89,7 @@ h1, h2, h3, h4 { font-family: var(--display); font-weight: 500; line-height: 1.1
 .hero__names   { letter-spacing: -.02em; }
 .section__title, .feature__title { letter-spacing: -.012em; }
 .count__num, .hero__day { letter-spacing: -.015em; font-feature-settings: "lnum" 1; }
-.family__names, .day-panel__title, .ritual__name, .venue__name { letter-spacing: -.005em; }
+.family__names, .venue__name { letter-spacing: -.005em; }
 
 a { color: var(--rose-deep); }
 img { max-width: 100%; display: block; }
@@ -123,23 +127,49 @@ body::after {
 }
 .js [data-reveal].is-in { opacity: 1; transform: none; }
 
-/* ------------------------------------------------------------- ceremonial intro
-   Plays once per visit. Three things retire it, so no single failure strands
-   the visitor: the CSS outro below (fill-mode forwards, so it holds opacity 0
-   and visibility hidden even if the script never runs), a JS timer, and the
-   fact that it is `pointer-events: none` throughout. That last one is the
-   important guarantee: this overlay can never intercept a click, so even if it
-   somehow stayed on screen the page underneath stays completely usable. */
+/* ------------------------------------------------------------- card intro
+   A physical-style Indian wedding card in two beats. The cover is pastel to
+   match the page; the inner face is the printed invitation. The cover hinges
+   on the left edge and swings open, and the guest taps a second control to
+   read on.
+
+   Two taps, but never a dead end: if the guest never taps, the CSS timings
+   carry the same sequence on their own, and only then is the Continue control
+   revealed without script, because a button that cannot be pressed should not
+   be on screen.
+
+   The previous intro was `pointer-events: none`, which meant it could never
+   intercept a click and therefore could never block the page. A card that
+   opens on tap cannot keep that property, so two other guarantees replace it:
+
+   1. `.intro` is display:none unless `html.js` is present. The class is added by
+      a three-line inline script in <head>, so if scripting is unavailable the
+      overlay never renders at all and the page is simply the page.
+   2. If the class is added but app.js then fails, every animation below is
+      written to run on its own — the cover lifts at 4.6s and the overlay
+      retires at 12s. JS only ever makes that happen sooner.
+
+   The inner face is staggered rather than revealed at once, because arriving
+   all in one beat reads as a glitch instead of a card opening. */
 .intro {
   position: fixed; inset: 0; z-index: 100;
-  display: grid; place-items: center;
+  display: none;
+  place-items: center;
   padding: 24px;
-  background: rgba(253, 251, 246, .82);
+  background: radial-gradient(circle at 50% 42%, rgba(253, 251, 246, .94), rgba(243, 236, 224, .97));
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
-  pointer-events: none;
-  animation: intro-out .6s ease 1.95s forwards;
+  /* No timer retires this. The cover opens when the guest taps it, and the
+     site appears when they press the control on the inner face. */
 }
+.js .intro { display: grid; }
+/* Once the cover has been lifted, nothing advances on its own — the invitation
+   moves on only when the guest presses the control on the inner face. This has
+   to cancel the 12s outro above, not merely delay it, or the page would carry
+   on regardless of what the guest (or the script) intends. */
+.intro.is-open { animation: none; }
+/* beat two, tapped: go now */
+.intro.is-going { animation: intro-out .85s ease 0s forwards; }
 
 .intro__glow {
   position: absolute; inset: -20%;
@@ -147,62 +177,274 @@ body::after {
     radial-gradient(closest-side, var(--blush) 0%, transparent 70%),
     radial-gradient(closest-side, var(--sage-50) 0%, transparent 70%);
   background-size: 90% 90%, 90% 90%;
-  background-position: 22% 18%, 78% 82%;
+  background-position: 24% 16%, 76% 84%;
   background-repeat: no-repeat;
-  opacity: 0;
-  animation: intro-glow 2.4s ease .05s both;
+  animation: intro-glow 3s ease .05s both;
 }
-/* The card is the only solid part. It is opaque ivory, so the arch never
-   appears to float over the page content behind it. */
-.intro__stage {
+
+/* ------------------------------------------------------------------- card
+   A plain <div>. The two controls are siblings rather than nested, because a
+   button inside a button is invalid and the inner face needs its own. */
+.card {
   position: relative;
+  width: min(78vw, 340px);
+  aspect-ratio: 5 / 7;
+  perspective: 1400px;
+  animation: intro-rise .7s ease .1s both;
+}
+
+/* Shared paper. Both faces carry a gold double rule and corner brackets, so
+   they read as two sides of one printed card. */
+.card__base, .card__leaf {
+  position: absolute; inset: 0;
+  border-radius: 8px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* --- inner face: the printed invitation --------------------------------- */
+.card__base {
+  z-index: 1;
   display: flex; flex-direction: column; align-items: center;
-  max-width: 100%;
-  padding: 34px 40px 30px;
-  background: var(--ivory);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow);
+  padding: 34px 24px 28px;
+  text-align: center;
+  color: var(--maroon);
+  background: linear-gradient(158deg, #fffdf8 0%, #fbf4e6 52%, #f6ecd9 100%);
+  border: 1px solid rgba(201, 162, 39, .5);
+  box-shadow: 0 18px 40px rgba(45, 54, 34, .16);
+  overflow: hidden;
+}
+.card__base::before {
+  content: ""; position: absolute; inset: 7px;
+  border: 1px solid rgba(201, 162, 39, .42);
+  border-radius: 4px; pointer-events: none;
+}
+.card__base::after {
+  content: ""; position: absolute; inset: 12px;
+  border: 1px solid rgba(201, 162, 39, .18);
+  border-radius: 2px; pointer-events: none;
 }
 
-/* The arch draws itself. pathLength="100" on each shape normalises the dash
-   maths, so the real geometry never has to be measured. */
-.intro__arch { width: min(46vw, 190px); height: auto; overflow: visible; }
-.intro__draw {
-  fill: none; stroke: #c9a227; stroke-linecap: round;
-  stroke-dasharray: 100; stroke-dashoffset: 100;
-}
-.intro__draw--outer { stroke-width: 2.2; animation: intro-draw 1.05s ease .1s forwards; }
-.intro__draw--inner { stroke-width: 1; opacity: 0; animation: intro-draw .9s ease .35s forwards, intro-fade .5s ease .35s forwards; }
-.intro__draw--finial { stroke-width: 1.4; animation: intro-draw .4s ease .6s forwards; }
-.intro__draw--base { stroke-width: 1.4; opacity: 0; animation: intro-draw .5s ease .55s forwards, intro-fade .4s ease .55s forwards; }
+  /* Every line of the inner face is hidden until the cover is opened. */
+  .card__base > * { opacity: 0; }
+  .intro.is-open .card__base > * { animation: card-in .8s ease both; }
+  /* The reading-order stagger, now measured from the tap instead of from a
+     clock. The cover passes 90deg at about 1.1s, which is the first moment the
+     base is actually uncovered, so the blessing waits for it and each line
+     after that trails in 0.25s behind. The Continue control is a direct child
+     too, so it needs its own slot or it would ride in with the blessing; it
+     lands last, once the invitation has settled and there is something to do. */
+  .intro.is-open .card__blessing { animation-delay: 1.1s; }
+  .intro.is-open .card__parents   { animation-delay: 1.35s; }
+  .intro.is-open .card__names     { animation-delay: 1.6s; }
+  .intro.is-open .card__invite    { animation-delay: 1.85s; }
+  .intro.is-open .card__when      { animation-delay: 2.1s; }
+  .intro.is-open .card__go        { animation-delay: 2.4s; }
 
-.intro__diya { margin-top: 4px; width: min(30vw, 116px); opacity: 0; animation: intro-rise .6s ease .5s forwards; }
-.intro__diya svg { width: 100%; height: auto; }
-.intro__flame { fill: #e8890c; transform-origin: 50% 92%; animation: intro-flame 1.4s ease-in-out .9s infinite; }
-.intro__bowl { fill: none; stroke: #c9a227; stroke-width: 2; }
-.intro__rim  { fill: none; stroke: #c9a227; stroke-width: 2; stroke-linecap: round; }
-
-.intro__line {
-  margin: 20px 0 0;
+.card__blessing {
   font-family: var(--display); font-style: italic; font-weight: 400;
-  font-size: clamp(1.1rem, 3.2vw, 1.4rem); letter-spacing: .06em;
-  color: var(--sage-700);
-  opacity: 0; animation: intro-rise .7s ease .75s forwards;
+  font-size: clamp(.86rem, 3.1vw, 1rem); line-height: 1.5;
+  color: #8a6a2e;
 }
-.intro__names {
-  margin: 6px 0 0;
-  font-family: var(--display); font-weight: 300;
-  font-size: clamp(1.6rem, 6.5vw, 2.5rem);
-  color: var(--rose);
-  opacity: 0; animation: intro-rise .8s ease 1.05s forwards;
+.card__parents {
+  display: flex; gap: 14px; align-items: flex-start;
+  margin: 22px 0 0; width: 100%;
 }
-.intro__amp { font-style: italic; font-weight: 400; color: var(--sage-500); padding: 0 .3em; }
+.card__parent { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.card__parent + .card__parent { border-left: 1px solid rgba(201, 162, 39, .4); padding-left: 14px; }
+.card__role {
+  font-family: var(--sans); font-size: .5rem; letter-spacing: .16em;
+  text-transform: uppercase; color: #a08a53;
+}
+.card__pname {
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(.8rem, 3.1vw, .96rem); line-height: 1.3; color: var(--maroon);
+}
+.card__names {
+  display: flex; flex-direction: column; align-items: center;
+  margin: 20px 0 0;
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(1.5rem, 6.4vw, 2.15rem); line-height: 1.18;
+  color: var(--maroon);
+}
+.card__gname, .card__bname { display: block; }
+.card__amp {
+  display: block; margin: 2px 0;
+  font-size: .58em; font-style: italic; color: var(--gold);
+}
+.card__invite {
+  margin: 16px 0 0; max-width: 22ch;
+  font-family: var(--display); font-style: italic; font-weight: 400;
+  font-size: clamp(.82rem, 3.2vw, 1rem); line-height: 1.5;
+  color: #6d5a3c;
+}
+.card__when {
+  margin: auto 0 0; padding-top: 16px;
+  font-family: var(--sans); font-size: .56rem; letter-spacing: .2em;
+  text-transform: uppercase; color: #a08a53;
+}
 
-@keyframes intro-draw  { to { stroke-dashoffset: 0; } }
-@keyframes intro-fade  { to { opacity: 1; } }
-@keyframes intro-rise  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-@keyframes intro-glow  { 0% { opacity: 0; } 45% { opacity: 1; } 100% { opacity: .8; } }
+/* beat two. Hidden outright without script, because a control that cannot be
+   pressed should not be on screen; the CSS timings reveal the site regardless. */
+.card__go {
+  display: none;
+  margin: 14px 0 0;
+  padding: 9px 22px;
+  font-family: var(--sans); font-size: .58rem; font-weight: 500;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--maroon);
+  background: transparent;
+  border: 1px solid rgba(201, 162, 39, .7);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.js .card__go { display: block; }
+.card__go:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.card__go:active { transform: translateY(1px); }
+
+/* --- cover: pastel, to match the page ----------------------------------- */
+.card__leaf {
+  z-index: 2;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 30px 26px 26px;
+  color: var(--rose);
+  background:
+    radial-gradient(105% 62% at 50% 8%, #fff8f4 0%, rgba(255, 248, 244, 0) 62%),
+    linear-gradient(160deg, #fffaf6 0%, #fdf0e8 48%, #f6e9e6 100%);
+  border: 1px solid rgba(201, 162, 39, .45);
+  box-shadow: 0 18px 40px rgba(45, 54, 34, .16);
+  transform-origin: 0% 50%;
+  transform-style: preserve-3d;
+  /* Opens like a card on its spine. `backface-visibility: hidden` is what makes
+     the cover disappear past 90°; without it the back of the cover would sit
+     there mirrored and the opening would read as a glitch. */
+  transform: rotateY(0deg);
+}
+.intro.is-open .card__leaf { animation: card-open 1.4s ease 0s both; }
+
+.card__leaf::before {
+  content: ""; position: absolute; inset: 9px;
+  border: 1.5px solid rgba(201, 162, 39, .55);
+  border-radius: 4px; pointer-events: none;
+}
+.card__leaf::after {
+  content: ""; position: absolute; inset: 15px;
+  border: 1px solid rgba(201, 162, 39, .28);
+  border-radius: 2px; pointer-events: none;
+}
+
+/* Gold corner brackets, the way printed invitation cards carry them. */
+.card__corner {
+  position: absolute; width: 22px; height: 22px;
+  border: 0 solid rgba(201, 162, 39, .8); pointer-events: none;
+}
+.card__corner--tl { top: 18px;    left: 18px;  border-top-width: 1.5px; border-left-width: 1.5px; }
+.card__corner--tr { top: 18px;    right: 18px; border-top-width: 1.5px; border-right-width: 1.5px; }
+.card__corner--bl { bottom: 18px; left: 18px;  border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.card__corner--br { bottom: 18px; right: 18px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+.card__crown { position: relative; display: block; width: min(38vw, 132px); margin: 4px 0 0; }
+.card__arch { width: 100%; height: auto; overflow: visible; }
+.card__draw {
+  fill: none; stroke: #c9a227; stroke-linecap: round;
+  stroke-dasharray: 100; stroke-dashoffset: 0;
+  animation: card-draw 1.2s ease .3s both;
+}
+.card__draw--outer  { stroke-width: 2.2; }
+.card__draw--inner  { stroke-width: 1; }
+.card__draw--finial { stroke-width: 1.4; }
+.card__draw--base   { stroke-width: 1.4; }
+
+/* Ganesha, seated inside the arch. Positioned off the crown's own box so the
+   arch geometry is untouched: the deity's base lands on the arch's base line,
+   which is what makes it look seated rather than floating. */
+.card__deity {
+  position: absolute; left: 50%; bottom: 4%;
+  width: 60%;
+  translate: -50% 0;
+  animation: intro-rise 1s ease .8s both;
+}
+.card__ganesh { width: 100%; height: auto; overflow: visible; }
+.card__ganesh path, .card__ganesh circle {
+  fill: none; stroke: #c9a227; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+.card__deva {
+  margin: 16px 0 0;
+  font-size: clamp(1.3rem, 5.4vw, 1.75rem); font-weight: 600;
+  color: var(--rose); letter-spacing: .02em;
+}
+.card__latin {
+  margin: 5px 0 0;
+  font-family: var(--display); font-style: italic; font-weight: 400;
+  font-size: clamp(.92rem, 3.5vw, 1.15rem); letter-spacing: .1em;
+  color: var(--sage-700);
+}
+.card__rule {
+  width: 54px; height: 1px; margin: 14px 0 0;
+  background: linear-gradient(90deg, transparent, #c9a227, transparent);
+  opacity: .7;
+}
+.card__diya { display: block; width: min(24vw, 84px); margin: auto 0 0; }
+.card__diya svg { width: 100%; height: auto; }
+.card__flame { fill: #e8890c; transform-origin: 50% 92%; animation: intro-flame 1.4s ease-in-out infinite; }
+.card__bowl { fill: none; stroke: #c9a227; stroke-width: 2; }
+.card__rim  { fill: none; stroke: #c9a227; stroke-width: 2; stroke-linecap: round; }
+
+/* The tap target for beat one. It covers the closed card, so a tap anywhere
+   works, and it is taken out of play once the cover is open. */
+.card__open {
+  position: absolute; inset: 0; z-index: 4;
+  padding: 0; border: 0; background: none;
+  cursor: pointer; color: transparent; font: inherit;
+  border-radius: 8px;
+}
+.card__open:focus-visible { outline: 2px solid var(--gold); outline-offset: 8px; }
+.intro.is-open .card__open, .intro.is-going .card__open { pointer-events: none; }
+
+/* The seal sits on the cover's free edge and is what "breaks" on open. */
+.card__seal {
+  position: absolute; z-index: 3;
+  top: 50%; right: 14px;
+  translate: 50% -50%;
+  width: 66px; height: 66px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #f0e0ae, #ddc477 62%, rgba(221, 196, 119, 0) 100%);
+  color: #7a5c12;
+  font-family: var(--sans); font-size: .55rem; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase;
+  box-shadow: 0 3px 10px rgba(120, 90, 20, .22);
+}
+.intro.is-open .card__seal { animation: seal-break .4s ease 0s both; }
+
+.card__hint {
+  position: absolute; left: 0; right: 0;
+  top: calc(50% + min(39vw, 170px) + 30px);
+  margin: 0; text-align: center;
+  font-family: var(--sans); font-size: .58rem; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink-mute);
+  animation: intro-hint 2.6s ease 1s infinite;
+}
+.intro.is-open .card__hint { animation: hint-out .3s ease .15s both; }
+
+@keyframes card-open {
+  0%   { transform: rotateY(0deg); }
+  55%  { transform: rotateY(-13deg); }
+  100% { transform: rotateY(-168deg); }
+}
+@keyframes card-in   { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+@keyframes seal-break {
+  0%   { opacity: 1; scale: 1; }
+  40%  { opacity: 1; scale: 1.07; }
+  100% { opacity: 0; scale: 1.32; }
+}
+@keyframes hint-out  { to { opacity: 0; } }
+@keyframes card-draw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+@keyframes intro-rise  { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes intro-hint { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+@keyframes intro-glow { 0% { opacity: 0; } 45% { opacity: 1; } 100% { opacity: .8; } }
 @keyframes intro-flame {
   0%, 100% { transform: scaleY(1) scaleX(1); opacity: 1; }
   35%      { transform: scaleY(1.14) scaleX(.94); opacity: .92; }
@@ -340,8 +582,6 @@ body::after {
 .hero__year  { font-family: var(--sans); font-size: .74rem; font-weight: 400; letter-spacing: .28em; color: var(--ink-soft); }
 .hero__sep { width: 5px; height: 5px; border-radius: 50%; background: var(--sage-200); }
 
-.hero__venue { font-size: .95rem; color: var(--ink-soft); margin: 16px 0 0; }
-.hero__venue:empty { display: none; }
 
 /* Lives outside .hero__card now, so it is no longer bounded by the card's
    660px measure or lifted in with the card's reveal. Both are re-applied here:
@@ -462,7 +702,6 @@ body::after {
 .day-panel { display: grid; gap: 14px; text-align: left; }
 .events { display: grid; gap: 12px; }
 .day-panel[hidden] { display: none; }
-.day-panel__title { font-size: 1.2rem; font-weight: 500; color: var(--ink); margin: 0 0 4px; text-align: center; }
 
 /* ------------------------------------------------------------- event rows */
 .event {
@@ -531,28 +770,19 @@ body::after {
 .venue__addr { font-size: .92rem; color: var(--ink-soft); margin: 12px 0 0; }
 .venue__links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
 
-/* ------------------------------------------------------------- rituals */
-.ritual-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 18px; margin-top: 40px; }
-.ritual {
-  padding: 28px 18px; text-align: center;
-  background: var(--card); border: 1px solid var(--line-soft);
-  border-radius: var(--r);
-  transition: border-color .2s ease, transform .2s ease;
-}
-.ritual:hover { border-color: var(--sage-200); transform: translateY(-2px); }
-.ritual__icon {
-  display: flex; align-items: center; justify-content: center;
-  width: 56px; height: 56px; margin: 0 auto 16px;
-  border-radius: 50%;
-  background: var(--sage-50); border: 1px solid var(--line-soft);
-}
-.ritual__icon .icon { width: 29px; height: 29px; }
-.ritual__name { font-family: var(--display); font-size: 1.05rem; font-weight: 500; color: var(--ink); margin: 0; }
-.ritual__when {
-  font-family: var(--sans); font-size: .58rem; font-weight: 400;
-  letter-spacing: .18em; text-transform: uppercase;
-  color: var(--ink-mute); margin: 8px 0 0;
-}
+  /* ------------------------------------------------------------ blessings
+     Replaces the ritual grid. The mandala is the one ornament that was styled
+     but never placed once the portrait took the hero, so it carries this panel
+     instead of adding a new asset. */
+  .section--blessings { max-width: 720px; padding-block: 76px; }
+  .section--blessings > *:not(.deco) { position: relative; z-index: 1; }
+  .blessings__text {
+    font-family: var(--display); font-style: italic; font-weight: 400;
+    font-size: clamp(1.2rem, 3.4vw, 1.55rem); line-height: 1.7;
+    color: var(--ink-soft); margin: 22px auto 0; max-width: 26em;
+  }
+  .blessings__text:empty { display: none; }
+
 
 /* ------------------------------------------------------------- rsvp */
 .rsvp-form {
@@ -651,6 +881,15 @@ body::after {
 }
 .act:hover { background: var(--sage-50); color: var(--sage-700); }
 .act svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+/* Muted state keeps the speaker and drops the waves, then crosses the whole
+   icon, so it reads as "currently silent" without relying on the label. */
+#soundBtn[aria-pressed="true"] .act__wave { display: none; }
+#soundBtn { position: relative; }
+#soundBtn[aria-pressed="true"]::after {
+  content: ""; position: absolute; top: 50%; left: 50%;
+  width: 20px; height: 1.6px; margin: -1px 0 0 -10px;
+  background: currentColor; border-radius: 1px; rotate: -45deg;
+}
 
 /* ------------------------------------------------------------- decoration
    Discipline, because the previous version of this page was cluttered: every
@@ -889,8 +1128,6 @@ body::after {
 
   .field-row { grid-template-columns: 1fr; }
   .rsvp-form { padding: 26px 18px; }
-  .ritual-grid { grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: 12px; }
-  .ritual { padding: 20px 12px; }
 
   .tab { min-width: 0; flex: 1 1 42%; padding: 12px 8px 14px; }
   .actions { gap: 2px; padding: 6px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
@@ -916,7 +1153,7 @@ body::after {
   body { background: #fff; padding-bottom: 0; }
   .section { padding: 18px 0; page-break-inside: avoid; }
   .hero__card { box-shadow: none; border: 1px solid #ddd; background: #fff; }
-  .count, .event, .venue, .ritual { box-shadow: none; border-color: #ccc; }
+  .count, .event, .venue { box-shadow: none; border-color: #ccc; }
   .day-panel[hidden] { display: block !important; }
   .day-panel + .day-panel { margin-top: 26px; border-top: 1px solid #ddd; padding-top: 20px; }
   /* Nothing is animated on paper, so reveals must be pinned to their end state. */

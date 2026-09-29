@@ -271,3 +271,9 @@ The printed card is written in a decorative script that OCR cannot read
 reliably, so names, parents, venue, and address came off the image by eye and
 are the values to check most carefully. The 12 function rows came off the
 printed table and are more trustworthy, but still worth a look.
+
+How to rub
+Edit wedding‑details.xlsx (the master workbook).
+Run python3 build_site.py (or make_bride_workbook.py for bride‑only changes).
+git add -A && git commit -m "…" && git push origin main.
+GitHub Pages rebuilds; the live site now shows your changes.

@@ -65,24 +65,9 @@
     var blessing = F["Family Greeting"] || D["Opening Blessing Line"] || "";
     text($("formalBlessing"), blessing);
 
-    /* Both parents per side, each on its own line, so a relative can see which
-       name belongs to whom. Falls back to the joined "Groom's Parents" value
-       when a workbook still only has the old single field. */
-    var parentBlocks = [
-      ["Groom", $("formalParentsGroom")],
-      ["Bride", $("formalParentsBride")],
-    ];
-    parentBlocks.forEach(function (pair) {
-      var side = pair[0], el = pair[1];
-      if (!el) return;
-      var father = D[side + "'s Father"] || "";
-      var mother = D[side + "'s Mother"] || "";
-      if (!father && !mother) {
-        father = D[side + "'s Parents"] || "";
-      }
-      el.textContent = [father, mother].filter(Boolean).join("  &  ");
-      el.hidden = !el.textContent.trim();
-    });
+    /* The parents are not repeated in the formal invitation: the families
+       block just above already names both sets, under a FATHER / MOTHER
+       label. Printing them again here read as a mistake. */
 
     var groom = D["Groom Name"] || "";
     var bride = D["Bride Name"] || "";
@@ -214,11 +199,17 @@
     });
     if (other.length) groups.push({ side: "", people: other });
 
+    /* Only label the groups when there is more than one. This card is printed
+       by the groom's family, so a single list headed "Groom's side" tells the
+       reader nothing they do not already know from who sent it. If relatives
+       are later added to the bride's side, both headings come back. */
+    var showSide = groups.length > 1;
+
     groups.forEach(function (group) {
       var wrap = document.createElement("div");
       wrap.className = "awaiting__group";
 
-      if (group.side) {
+      if (showSide && group.side) {
         var h = document.createElement("h3");
         h.className = "awaiting__side";
         h.textContent = group.side;

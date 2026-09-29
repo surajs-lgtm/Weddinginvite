@@ -1202,7 +1202,6 @@ body::after {
   color: var(--ink-soft);
   line-height: 1.75;
 }
-.formal__line--parents { color: var(--ink); font-weight: 400; }
 /* The couple's names are the one line the page is built around, so they get
    the display face and the largest size here that is still below the hero. */
 .formal__names {
@@ -1365,22 +1364,6 @@ body::after {
   flex: 0 0 auto;
 }
 .family__name { font-family: var(--display); font-size: 1.3rem; font-weight: 500; color: var(--ink); }
-
-/* The formal invitation labels each side so a relative knows whose parents
-   they are reading, and keeps the two sets on separate lines. */
-.formal__side { display: block; }
-.formal__side + .formal__side { margin-top: .5rem; }
-.formal__side-label {
-  display: block;
-  font-size: .6rem;
-  font-weight: 600;
-  letter-spacing: .18em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  margin-bottom: .1rem;
-}
-.formal__side-names { display: block; font-size: 1rem; line-height: 1.5; }
-.formal__line--parents:empty { display: none; }
 
 /* ============================================ eagerly awaiting your presence
    The named relatives. Grouped by side and set as a list of names with the

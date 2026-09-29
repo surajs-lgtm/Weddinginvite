@@ -1,0 +1,25 @@
+Hi Priyanka,
+
+The invitation is ready, and it now has two versions. Suraj's family sees the card with his name first and his family's details above the names; yours is the same card with your name first and your family on top. Nothing else is different.
+
+Your version:
+- Friends' card: https://surajsingh81.github.io/Weddinginvite/index-bride.html
+- Family card: https://surajsingh81.github.io/Weddinginvite/family-bride.html
+
+The family card is the longer one. It has the formal invitation, the four-day schedule, who to call, parking and the baraat route. It also has a section explaining what each of the twelve functions is, which appears only on your card.
+
+I've attached bride-details.xlsx and there is one thing I need from you. Everything shared is already filled in and shouldn't be changed: the dates (9 to 12 December 2026), the venue (Hotel Amrai 69, Pune), and the names of the twelve functions. If any of it looks wrong, tell me rather than editing it.
+
+What I need you to fill in:
+
+1. Your parents' names. They are already there in green, because they were right on the printed card. Please read them over and correct them if I've got them wrong. Green means "already set"; the gold -- FILL IN -- means it still needs you.
+
+2. The Rituals sheet, twelve rows. For each function: what it is, why it happens, and any note about your family's custom. Then set Verified? to Yes. Nothing appears on your page until you tick it, so an explanation you haven't checked can never reach a relative.
+
+3. The Family Members sheet, your relatives, one per row. Side is already set to "Bride's side" on those rows.
+
+Send the file back when you're done and I'll put it live, then send you the link to check.
+
+Two things to flag. Suraj's family has not seen your parents' names on the page yet, since that part is still yours to confirm, so please send the file when you can. And the rituals are only right if someone who was actually at these weddings wrote them, so please have a family member read yours over before you tick them.
+
+Thank you, Priyanka. This is the last thing I need from you.

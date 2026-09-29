@@ -36,8 +36,14 @@ and running `build_site.py` still updates the live site on the next push.
 Open **`wedding-details.xlsx`**. Every gold `-- FILL IN --` cell needs your
 answer. These came off the card by machine reading and still need checking:
 
-**Wedding Details sheet** — Groom, Bride, both parents, city, venue name and
+**Wedding Details sheet** — Groom, Bride, city, venue name and
 address, Google Maps link, contact phone, WhatsApp number, RSVP deadline.
+
+The parents are four separate fields: `Groom's Father`, `Groom's Mother`,
+`Bride's Father`, `Bride's Mother`. The card used to have one field per side
+and the name typed into it was a father's, so that name was moved into the
+Father field and the Mother fields were left for you. Leave a mother blank if
+you would rather not list her — the label is dropped rather than shown empty.
 
 **Wedding Functions sheet** — all 12 functions, their dates and times are filled
 in. Confirm each one against the card, then flip **Verified?** from `No` to
@@ -56,6 +62,13 @@ and why it happens, in the words you would use explaining it to family. Each
 row has its own **Verified?**: a row stays hidden until that is `Yes`, so an
 explanation you have not checked never reaches a relative. **Family Contacts
 sheet** — one row per person, for the "who do I call" section.
+
+**Family Members sheet** — the "Eagerly Awaiting Your Presence" list on the
+family page. One row per relative, as many rows as you want: `Name` (required),
+`Relation to the couple`, `Side` (Groom's side / Bride's side / Both, which
+groups the page into two lists), and `From / location`. Set **Verified?** to
+`Yes` for a row to appear. Until at least one row is verified the whole section
+hides itself, so a half-filled sheet never shows a bare heading.
 
 **Wedding Functions sheet**, column H, **Family Detail** — a short note per
 function for the family page only, e.g. which side hosts it. Unlike the Note
@@ -85,10 +98,12 @@ there.** It has no `--dry-run` and no `--help`, and it does not merge, so do not
 run it against the workbook you have been editing. Everything you have typed
 goes. It is only for starting over.
 
-**`add_family_sheets.py` overwrites three sheets** — Family Details, Rituals
-and Family Contacts — with the defaults held in that file. It exists so a
-workbook predating the family sheets can be given them. To change what the
-family page says, type into the workbook and leave that script alone.
+**`add_family_sheets.py` overwrites four sheets** — Family Details, Rituals,
+Family Contacts and Family Members — with the defaults held in that file, and
+rewrites the four parent rows in Wedding Details. It exists so a workbook
+predating these sheets can be given them, and it is safe to re-run: it will not
+overwrite a parent name or a family member you have already typed. To change
+what the family page says, type into the workbook and leave that script alone.
 
 ## 3. Run it locally
 
@@ -119,13 +134,15 @@ A server is needed because the site loads `data.js` as a separate file; opening
 the customs or does not need to: the couple's names, the countdown, the
 schedule, the venue, RSVP.
 
-`family.html` is the long one, for relatives, and adds four things:
+`family.html` is the long one, for relatives, and adds five things:
 
 - **The formal invitation** in printed-card order — blessing, both sets of
   parents, the couple, the request, the dates
 - **The Rituals**, a card per function explaining what it is and why it
   happens. This is the real addition: a relative from another region, or your
   spouse's colleague, would otherwise just see twelve unfamiliar names
+- **Eagerly Awaiting Your Presence**, the named relatives from the Family
+  Members sheet, grouped into the groom's side and the bride's side
 - **Who To Call**, from the Family Contacts sheet
 - **Practical Details** — baraat route, parking, accommodation, gift note
 

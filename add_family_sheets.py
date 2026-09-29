@@ -68,6 +68,116 @@ def mark_field_value(ws, col, first_row, last_row):
             ws.cell(row=r, column=col).fill = set_fill
 
 
+# ------------------------------------------------------------ Parent fields
+# The card carries both parents' names, but the workbook had one field per side
+# and the name typed into it ("Randhir Prasad Singh") is a father's. So the two
+# old fields are split into four. The old name moves to the Father field rather
+# than being copied into both, because putting a father's name in as the mother
+# would be worse than leaving the mother blank.
+PARENT_FIELDS = [
+    ("Groom's Father", FILLIN, "Father of the groom. Goes first on the card."),
+    ("Groom's Mother", FILLIN, "Mother of the groom. Leave blank if you would rather not list her."),
+    ("Bride's Father", FILLIN, "Father of the bride"),
+    ("Bride's Mother", FILLIN, "Mother of the bride"),
+]
+
+# The old single-parent labels, in the order they appear on the sheet. Kept as a
+# list rather than a dict because the split writes two rows per old label; see
+# migrate_parent_fields, which pairs them with PARENT_FIELDS explicitly.
+PARENT_MIGRATION = [
+    ("Groom's Parents", "Groom's Father", "Groom's Mother"),
+    ("Bride's Parents", "Bride's Father", "Bride's Mother"),
+]
+
+
+def migrate_parent_fields(wb):
+    """Split "Groom's Parents" into a father and a mother field.
+
+    Moves the existing value into the Father field and clears the old one, so
+    the name is never printed in both places. Both new rows are written
+    explicitly rather than derived from PARENT_MIGRATION alone, because a
+    migration map naming only the father target silently produced a Father row
+    and no Mother row.
+    """
+    if "Wedding Details" not in wb.sheetnames:
+        return
+    ws = wb["Wedding Details"]
+
+    def row_for(label):
+        for r in range(2, ws.max_row + 1):
+            if str(ws.cell(row=r, column=1).value or "").strip() == label:
+                return r
+        return None
+
+    # old label -> (father label, mother label)
+    splits = PARENT_MIGRATION
+    details = {lbl: (val, nte) for lbl, val, nte in PARENT_FIELDS}
+
+    for old_label, father_label, mother_label in splits:
+        old_row = row_for(old_label)
+        if old_row is None:
+            continue
+
+        old_value = ws.cell(row=old_row, column=2).value
+        moving = None if is_placeholder(old_value) else old_value
+
+        # Once a side has been split, the old row stays on the sheet with an
+        # empty value as a tombstone. Without this guard the second run sees
+        # that tombstone, decides there is nothing to move, and overwrites the
+        # father with the placeholder — silently deleting the name.
+        already_split = all(
+            row_for(label) is not None for label in (father_label, mother_label)
+        )
+        if already_split and moving is None:
+            continue
+
+        # Father first, then Mother directly under it, so the sheet keeps
+        # reading groom then bride.
+        for offset, label in ((0, father_label), (1, mother_label)):
+            if row_for(label) is None:
+                ws.insert_rows(old_row + 1 + offset)
+                r = old_row + 1 + offset
+                ws.cell(row=r, column=1).value = label
+                ws.cell(row=r, column=1).font = title_font
+                ws.cell(row=r, column=1).border = border
+                ws.cell(row=r, column=1).alignment = wrap
+
+            r = row_for(label)
+            # the father inherits the old name, the mother starts empty
+            value = moving if label == father_label else FILLIN
+            cell = ws.cell(row=r, column=2)
+            cell.value = value
+            cell.border = border
+            cell.alignment = wrap
+            if is_placeholder(value):
+                cell.font = fill_font
+                cell.fill = fill_fill
+            else:
+                cell.font = set_font
+                cell.fill = set_fill
+
+            _, notes = details.get(label, ("", ""))
+            ncell = ws.cell(row=r, column=3)
+            ncell.value = notes
+            ncell.border = border
+            ncell.alignment = wrap
+            ncell.font = Font(name="Calibri", size=11, color="7A756C", italic=True)
+
+        # clear the old field so the name is not printed in both places
+        old_value_cell = ws.cell(row=old_row, column=2)
+        old_value_cell.value = ""
+        old_value_cell.font = Font(name="Calibri", size=11, color="7A756C", italic=True)
+        old_notes_cell = ws.cell(row=old_row, column=3)
+        old_notes_cell.value = (
+            "Split into '%s' and '%s'. The name above moved." % (father_label, mother_label)
+        )
+        old_notes_cell.font = Font(name="Calibri", size=11, color="7A756C", italic=True)
+
+
+def is_placeholder(value):
+    return value is None or str(value).strip() in ("", FILLIN)
+
+
 # ------------------------------------------------------------ Family Details
 FAMILY_ROWS = [
     ("Field", "Value", "Notes"),
@@ -86,7 +196,43 @@ FAMILY_ROWS = [
     ("Family Contact 2 Phone", FILLIN, "With country code"),
     ("Family Contact 2 Role", FILLIN, ""),
     ("Gift / Shagun Note", FILLIN, "Optional. Left blank, nothing appears."),
+    ("Awaiting Section Title", "Eagerly Awaiting Your Presence",
+     "Heading above the list of family members. Leave blank to use the default."),
+    ("Awaiting Section Note", FILLIN, "One line under the heading, e.g. 'From both our families'. Optional."),
 ]
+
+# ----------------------------------------------------------- Family Members
+# The "Eagerly Awaiting Your Presence" list. One row per person, name required,
+# and as many rows as you want — this is the sheet to keep adding to. Grouped on
+# the page by Side, so the two families read as two lists rather than one long
+# column of names.
+MEMBER_ROWS = [
+    ("Name", "Relation to the couple", "Side", "From / location", "Verified?"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+    (FILLIN, FILLIN, FILLIN, FILLIN, "No"),
+]
+
+# Side is a closed list because the page groups on it; DataValidation is applied
+# to the column in write_family_sheets. Anything unrecognised falls back to a
+# single untitled group rather than disappearing.
+MEMBER_SIDES = ("Groom's side", "Bride's side", "Both")
 
 # ------------------------------------------------------------------- Rituals
 # Every line here is researched but not all of it confirmed, so each row has a
@@ -178,7 +324,7 @@ def write_family_sheets(wb, help_sheet=True):
     Existing sheets of the same name are dropped first, so running this twice
     in a row is a no-op rather than a duplicate-sheet error.
     """
-    for name in ("Family Details", "Rituals", "Family Contacts"):
+    for name in ("Family Details", "Rituals", "Family Contacts", "Family Members"):
         if name in wb.sheetnames:
             del wb[name]
 
@@ -217,6 +363,28 @@ def write_family_sheets(wb, help_sheet=True):
                 ws.cell(row=r, column=col).font = fill_font
                 ws.cell(row=r, column=col).fill = fill_fill
 
+    ws = wb.create_sheet("Family Members")
+    for r in MEMBER_ROWS:
+        ws.append(list(r))
+    style_table(ws, {"A": 24, "B": 30, "C": 16, "D": 26, "E": 12})
+    for r in range(2, len(MEMBER_ROWS) + 1):
+        ws.cell(row=r, column=1).font = title_font
+        ws.cell(row=r, column=5).alignment = center
+        for col in (1, 2, 3, 4):
+            v = ws.cell(row=r, column=col).value
+            if isinstance(v, str) and v.strip() == FILLIN:
+                ws.cell(row=r, column=col).font = fill_font
+                ws.cell(row=r, column=col).fill = fill_fill
+    dv_side = DataValidation(
+        type="list", formula1='"%s"' % ",".join(MEMBER_SIDES), allow_blank=True
+    )
+    ws.add_data_validation(dv_side)
+    dv_side.add("C2:C300")
+    dv_ok = DataValidation(type="list", formula1='"No,Yes"', allow_blank=True)
+    ws.add_data_validation(dv_ok)
+    dv_ok.add("E2:E300")
+
+    migrate_parent_fields(wb)
     write_function_family_column(wb)
 
     if help_sheet and "How To Use" in wb.sheetnames:

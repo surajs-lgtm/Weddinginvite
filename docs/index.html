@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=e25fac03">
+<link rel="stylesheet" href="styles.css?v=09d6af06">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -237,12 +237,30 @@
 <section class="families" id="families" aria-label="Families">
   <div class="family">
     <h3 class="family__side">Groom's Family</h3>
-    <p class="family__names" id="groomParents"></p>
+    <p class="family__names" id="groomParents">
+      <span class="family__line" data-role="father">
+        <span class="family__role">Father</span>
+        <span class="family__name" id="groomFather"></span>
+      </span>
+      <span class="family__line" data-role="mother">
+        <span class="family__role">Mother</span>
+        <span class="family__name" id="groomMother"></span>
+      </span>
+    </p>
   </div>
   <div class="family__divider" aria-hidden="true"></div>
   <div class="family">
     <h3 class="family__side">Bride's Family</h3>
-    <p class="family__names" id="brideParents"></p>
+    <p class="family__names" id="brideParents">
+      <span class="family__line" data-role="father">
+        <span class="family__role">Father</span>
+        <span class="family__name" id="brideFather"></span>
+      </span>
+      <span class="family__line" data-role="mother">
+        <span class="family__role">Mother</span>
+        <span class="family__name" id="brideMother"></span>
+      </span>
+    </p>
   </div>
 </section>
 
@@ -400,7 +418,7 @@
   <audio id="flute" src="assets/audio/flute.mp3" preload="auto"></audio>
 
 
-<script src="data.js?v=472bc6eb"></script>
-<script src="app.js?v=c64e686a"></script>
+<script src="data.js?v=2c2f47c6"></script>
+<script src="app.js?v=3a10a9f6"></script>
 </body>
 </html>

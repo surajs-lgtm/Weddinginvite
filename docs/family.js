@@ -65,10 +65,24 @@
     var blessing = F["Family Greeting"] || D["Opening Blessing Line"] || "";
     text($("formalBlessing"), blessing);
 
-    var groomParent = D["Groom's Parents"] || "";
-    var brideParent = D["Bride's Parents"] || "";
-    var parents = [groomParent, brideParent].filter(Boolean).join("  ·  ");
-    text($("formalParents"), parents);
+    /* Both parents per side, each on its own line, so a relative can see which
+       name belongs to whom. Falls back to the joined "Groom's Parents" value
+       when a workbook still only has the old single field. */
+    var parentBlocks = [
+      ["Groom", $("formalParentsGroom")],
+      ["Bride", $("formalParentsBride")],
+    ];
+    parentBlocks.forEach(function (pair) {
+      var side = pair[0], el = pair[1];
+      if (!el) return;
+      var father = D[side + "'s Father"] || "";
+      var mother = D[side + "'s Mother"] || "";
+      if (!father && !mother) {
+        father = D[side + "'s Parents"] || "";
+      }
+      el.textContent = [father, mother].filter(Boolean).join("  &  ");
+      el.hidden = !el.textContent.trim();
+    });
 
     var groom = D["Groom Name"] || "";
     var bride = D["Bride Name"] || "";
@@ -160,6 +174,85 @@
     }
 
     sec.hidden = shown === 0;
+  })();
+
+  /* ---------------------------------------------------- eagerly awaiting */
+  /* The named relatives, grouped by side. Grouping is what makes this read
+     like a printed card instead of a guest list: the two families sit side by
+     side, each name with its relation underneath. */
+  (function awaitingSection() {
+    var sec = $("awaiting");
+    var list = $("awaitingList");
+    if (!sec || !list) return;
+
+    var members = (family.members || []).filter(function (m) {
+      return m && String(m.name || "").trim();
+    });
+
+    var title = F["Awaiting Section Title"] || "Eagerly Awaiting Your Presence";
+    text($("awaitingTitle"), title);
+    text($("awaitingNote"), F["Awaiting Section Note"] || "");
+
+    if (!members.length) {
+      sec.hidden = true;
+      return;
+    }
+
+    /* Keep the workbook's side order stable and put anything unrecognised last
+       under no heading, rather than sorting names around and hiding which
+       family a relative belongs to. */
+    var order = ["Groom's side", "Bride's side", "Both"];
+    var groups = [];
+    order.forEach(function (side) {
+      var inGroup = members.filter(function (m) {
+        return String(m.side || "").trim() === side;
+      });
+      if (inGroup.length) groups.push({ side: side, people: inGroup });
+    });
+    var other = members.filter(function (m) {
+      return order.indexOf(String(m.side || "").trim()) === -1;
+    });
+    if (other.length) groups.push({ side: "", people: other });
+
+    groups.forEach(function (group) {
+      var wrap = document.createElement("div");
+      wrap.className = "awaiting__group";
+
+      if (group.side) {
+        var h = document.createElement("h3");
+        h.className = "awaiting__side";
+        h.textContent = group.side;
+        wrap.appendChild(h);
+      }
+
+      var ul = document.createElement("ul");
+      ul.className = "awaiting__names";
+      group.people.forEach(function (m) {
+        var li = document.createElement("li");
+        li.className = "awaiting__person";
+
+        var nameEl = document.createElement("span");
+        nameEl.className = "awaiting__name";
+        nameEl.textContent = m.name;
+        li.appendChild(nameEl);
+
+        /* Relation and hometown are both optional; only the bits actually
+           filled in are appended, so a row with only a name stays a clean
+           single line. */
+        var detail = [m.relation, m.from].filter(Boolean).join("  ·  ");
+        if (detail) {
+          var d = document.createElement("span");
+          d.className = "awaiting__detail";
+          d.textContent = detail;
+          li.appendChild(d);
+        }
+        ul.appendChild(li);
+      });
+      wrap.appendChild(ul);
+      list.appendChild(wrap);
+    });
+
+    sec.hidden = false;
   })();
 
   /* ---------------------------------------------------------- contacts */

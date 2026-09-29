@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=e25fac03">
+<link rel="stylesheet" href="styles.css?v=09d6af06">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -237,12 +237,30 @@
 <section class="families" id="families" aria-label="Families">
   <div class="family">
     <h3 class="family__side">Groom's Family</h3>
-    <p class="family__names" id="groomParents"></p>
+    <p class="family__names" id="groomParents">
+      <span class="family__line" data-role="father">
+        <span class="family__role">Father</span>
+        <span class="family__name" id="groomFather"></span>
+      </span>
+      <span class="family__line" data-role="mother">
+        <span class="family__role">Mother</span>
+        <span class="family__name" id="groomMother"></span>
+      </span>
+    </p>
   </div>
   <div class="family__divider" aria-hidden="true"></div>
   <div class="family">
     <h3 class="family__side">Bride's Family</h3>
-    <p class="family__names" id="brideParents"></p>
+    <p class="family__names" id="brideParents">
+      <span class="family__line" data-role="father">
+        <span class="family__role">Father</span>
+        <span class="family__name" id="brideFather"></span>
+      </span>
+      <span class="family__line" data-role="mother">
+        <span class="family__role">Mother</span>
+        <span class="family__name" id="brideMother"></span>
+      </span>
+    </p>
   </div>
 </section>
 
@@ -260,12 +278,37 @@
   <h2 class="section__title">You Are Invited</h2>
   <div class="formal">
     <p class="formal__line" id="formalBlessing"></p>
-    <p class="formal__line formal__line--parents" id="formalParents"></p>
+    <p class="formal__line formal__line--parents" id="formalParents">
+      <span class="formal__side">
+        <span class="formal__side-label">Groom&rsquo;s Parents</span>
+        <span class="formal__side-names" id="formalParentsGroom"></span>
+      </span>
+      <span class="formal__side">
+        <span class="formal__side-label">Bride&rsquo;s Parents</span>
+        <span class="formal__side-names" id="formalParentsBride"></span>
+      </span>
+    </p>
     <p class="formal__names" id="formalNames"></p>
     <p class="formal__ask" id="formalAsk"></p>
     <p class="formal__dates" id="formalDates"></p>
   </div>
   <p class="formal__note" id="familyNoteBlock" hidden></p>
+</section>
+
+<!-- ============ eagerly awaiting your presence (family page only) ============
+     Relatives are named on a printed card so a guest can see who is hosting
+     them. The list is driven entirely by the "Family Members" sheet: add a row,
+     set Verified? to Yes, and the name appears. The heading hides until at
+     least one name is ready, so a half-filled sheet never shows a bare title.
+
+     Grouped by Side rather than printed as one column, so the two families
+     read as two lists. An unrecognised Side still prints, under no heading,
+     instead of being dropped — a name typed in should never vanish. -->
+<section class="section" id="awaiting" hidden>
+  <p class="section__eyebrow">With folded hands</p>
+  <h2 class="section__title" id="awaitingTitle">Eagerly Awaiting Your Presence</h2>
+  <p class="awaiting__note" id="awaitingNote" hidden></p>
+  <div class="awaiting" id="awaitingList"></div>
 </section>
 
 <!-- ============ rituals explained (family page only) ============
@@ -458,11 +501,11 @@
   <audio id="flute" src="assets/audio/flute.mp3" preload="auto"></audio>
 
 
-<script src="data.js?v=472bc6eb"></script>
-<script src="app.js?v=c64e686a"></script>
+<script src="data.js?v=2c2f47c6"></script>
+<script src="app.js?v=3a10a9f6"></script>
 <!-- family.js last, and only on this page. It reads the same window.WEDDING_DATA
      and adds the sections above; app.js is shared unchanged with index.html, so
      nothing on the friends page depends on this file. -->
-<script src="family.js?v=5c7dce24" defer></script>
+<script src="family.js?v=2e01aff2" defer></script>
 </body>
 </html>

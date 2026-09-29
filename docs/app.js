@@ -79,9 +79,32 @@
   setText("topHashtag", D["Hashtag"]);
   setText("footHashtag", D["Hashtag"]);
   setText("footContact", [D["Contact Name"], D["Contact Phone"]].filter(Boolean).join(" · "));
-  setText("groomParents", D["Groom's Parents"]);
-  setText("brideParents", D["Bride's Parents"]);
-  $("families").hidden = !D["Groom's Parents"] && !D["Bride's Parents"];
+
+  /* The families block lists father and mother on their own labelled lines
+     rather than one joined string, so a reader can tell the two apart. A line
+     with no name is removed, and a whole side is removed when both its lines
+     go, so a half-filled block still reads as deliberate rather than broken. */
+  var anyParent = false;
+  ["groom", "bride"].forEach(function (side) {
+    var sideName = side === "groom" ? "Groom" : "Bride";
+    var block = $(side + "Parents");
+    if (!block) return;
+    ["Father", "Mother"].forEach(function (role) {
+      var nameEl = $(side + role);
+      var line = nameEl && nameEl.parentNode;
+      if (nameEl) nameEl.textContent = D[sideName + "'s " + role] || "";
+      if (line && !nameEl.textContent.trim()) line.parentNode.removeChild(line);
+    });
+    if (block.textContent.trim()) {
+      anyParent = true;
+      return;
+    }
+    /* Nothing on this side, so drop the whole column rather than leaving a
+       "Groom's Family" heading with nothing under it. */
+    var column = block.closest && block.closest(".family");
+    if (column && column.parentNode) column.parentNode.removeChild(column);
+  });
+  $("families").hidden = !anyParent;
 
   if (D["Quote / Verse"]) {
     setText("verseText", D["Quote / Verse"]);

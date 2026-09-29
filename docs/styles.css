@@ -1346,3 +1346,66 @@ body::after {
      and drop the ornament and the RSVP form, as index.html already does. */
   .ritual, .contact, .logistic { box-shadow: none; border-color: #ccc; background: #fff; }
 }
+
+/* ============================================================ parents (labelled)
+   Father and mother are on their own lines with a small role label, instead of
+   one joined string. The label is what makes the pair readable: "Father
+   Randhir" and "Mother Kamla" cannot be misread the way "Randhir & Kamla" can
+   when a guest is checking who is hosting them. */
+.family__names { display: flex; flex-direction: column; gap: .3rem; }
+.family__names:empty { display: none; }
+.family__line { display: flex; align-items: baseline; justify-content: center; gap: .45rem; }
+.family__role {
+  font-family: var(--body);
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  flex: 0 0 auto;
+}
+.family__name { font-family: var(--display); font-size: 1.3rem; font-weight: 500; color: var(--ink); }
+
+/* The formal invitation labels each side so a relative knows whose parents
+   they are reading, and keeps the two sets on separate lines. */
+.formal__side { display: block; }
+.formal__side + .formal__side { margin-top: .5rem; }
+.formal__side-label {
+  display: block;
+  font-size: .6rem;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: .1rem;
+}
+.formal__side-names { display: block; font-size: 1rem; line-height: 1.5; }
+.formal__line--parents:empty { display: none; }
+
+/* ============================================ eagerly awaiting your presence
+   The named relatives. Grouped by side and set as a list of names with the
+   relation underneath, which is how this appears on a printed card -- the
+   relation is the useful part, and it is smaller than the name on purpose. */
+.awaiting__note {
+  font-family: var(--body);
+  font-size: .95rem;
+  color: var(--ink-soft);
+  text-align: center;
+  margin: -.4rem 0 1.4rem;
+}
+.awaiting { display: flex; flex-direction: column; gap: 1.6rem; align-items: center; }
+.awaiting__group { text-align: center; }
+.awaiting__side {
+  font-family: var(--body);
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 .7rem;
+}
+.awaiting__names { list-style: none; margin: 0; padding: 0; }
+.awaiting__person { margin: 0 0 .85rem; }
+.awaiting__person:last-child { margin-bottom: 0; }
+.awaiting__name { display: block; font-family: var(--display); font-size: 1.15rem; font-weight: 500; color: var(--ink); }
+.awaiting__detail { display: block; font-size: .8rem; color: var(--ink-soft); margin-top: .1rem; }

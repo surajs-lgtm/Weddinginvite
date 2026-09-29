@@ -125,7 +125,36 @@ def read_details(wb):
             details[key] = ""
         else:
             details[key] = str(value).strip()
-    return details
+    return parents_view(details)
+
+
+def parents_view(details):
+    """Add the four parent fields plus a joined 'Groom's Parents' display value.
+
+    Two jobs, both in one place because getting them out of step is how a
+    father's name ends up printed as a mother's:
+
+    1. Normalise a workbook that still has the old single "Groom's Parents"
+       field. That value is a father's -- it was typed into a field with no
+       gender -- so it fills Father and Mother is left empty.
+    2. Join Father and Mother into the old display key so app.js and family.js
+       keep reading one field. A blank mother drops the ampersand instead of
+       printing "Randhir & "; a side with neither stays empty so the card still
+       removes the whole line.
+    """
+    out = dict(details)
+    for side in ("Groom", "Bride"):
+        old = out.pop("%s's Parents" % side, "")
+        father = out.get("%s's Father" % side, "")
+        mother = out.get("%s's Mother" % side, "")
+        if not father and not mother and old:
+            father, mother = old, ""
+        names = [n for n in (father, mother) if n]
+        out["%s's Father" % side] = father
+        out["%s's Mother" % side] = mother
+        # "&" between them, "and" for a married couple reads oddly
+        out["%s's Parents" % side] = " & ".join(names) if names else ""
+    return out
 
 
 def read_field_sheet(wb, name):
@@ -172,6 +201,37 @@ def read_rituals(wb):
             "note": "" if is_blank(note) else str(note).strip(),
         }
     return out
+
+
+def read_members(wb):
+    """The Family Members sheet, one row per person, name required.
+
+    These are the names printed under "Eagerly Awaiting Your Presence". Unlike
+    the Rituals sheet this is a display list, not an explanation, so there is no
+    Verified? gate -- but the column is there anyway, and a row is only printed
+    when it says Yes. That way a relative's name typed in but not yet checked
+    does not reach the page by accident.
+    """
+    if "Family Members" not in wb.sheetnames:
+        return []
+    ws = wb["Family Members"]
+    rows = []
+    for name, relation, side, frm, verified in ws.iter_rows(
+        min_row=2, values_only=True
+    ):
+        if is_blank(name):
+            continue
+        if not is_confirmed(verified):
+            continue
+        rows.append(
+            {
+                "name": str(name).strip(),
+                "relation": "" if is_blank(relation) else str(relation).strip(),
+                "side": "" if is_blank(side) else str(side).strip(),
+                "from": "" if is_blank(frm) else str(frm).strip(),
+            }
+        )
+    return rows
 
 
 def read_contacts(wb):
@@ -434,7 +494,14 @@ def build():
             }
 
     known = [label for label, value in details.items() if str(value).strip()]
-    missing = [label for label, value in details.items() if not str(value).strip()]
+    # "Groom's Parents" is derived from the four parent fields, so reporting it
+    # would double-count a side that is already filled. Report the real fields.
+    derived = {("%s's Parents" % s) for s in ("Groom", "Bride")}
+    missing = [
+        label
+        for label, value in details.items()
+        if not str(value).strip() and label not in derived
+    ]
 
     data = {
         "generated": datetime.now().strftime("%d %b %Y, %H:%M"),
@@ -451,6 +518,7 @@ def build():
             "details": read_field_sheet(wb, "Family Details"),
             "contacts": read_contacts(wb),
             "rituals": rituals,
+            "members": read_members(wb),
         },
     }
 
@@ -536,6 +604,22 @@ def build():
             print(f"  - {label}")
     else:
         print("\nAll detail fields are filled in.")
+
+    members = data["family"]["members"]
+    if members:
+        print(f"\nFamily Members listed ({len(members)}):")
+        for m in members:
+            bits = [m["name"]]
+            if m["relation"]:
+                bits.append(m["relation"])
+            if m["side"]:
+                bits.append(m["side"])
+            print("  - " + " — ".join(bits))
+    else:
+        print(
+            "\nNo family members listed. Fill the 'Family Members' sheet and set"
+            "\nVerified? to Yes; the section hides itself until you do."
+        )
 
     if family_missing:
         print(f"\nFamily page still to fill in ({len(family_missing)}):")

@@ -23,3 +23,9 @@ __pycache__/
 wedding-details.xlsx
 ~$wedding-details.xlsx
 *.xlsx.lock
+
+# Scratch workbooks kept alongside the main one, and the lock file Excel leaves
+# while a workbook is open. family_list.xlsx holds relatives' names, so it stays
+# out of the repo for the same reason wedding-details.xlsx does.
+family_list.xlsx
+~$*.xlsx

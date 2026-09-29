@@ -1405,7 +1405,20 @@ body::after {
   margin: 0 0 .7rem;
 }
 .awaiting__names { list-style: none; margin: 0; padding: 0; }
-.awaiting__person { margin: 0 0 .85rem; }
+.awaiting__person { margin: 0 0 .85rem; break-inside: avoid; }
 .awaiting__person:last-child { margin-bottom: 0; }
 .awaiting__name { display: block; font-family: var(--display); font-size: 1.15rem; font-weight: 500; color: var(--ink); }
 .awaiting__detail { display: block; font-size: .8rem; color: var(--ink-soft); margin-top: .1rem; }
+
+/* A real list of relatives runs to fifteen or twenty names, which as one tall
+   column is a lot of scrolling for a section nobody needs to read closely.
+   Above the phone breakpoint it flows into balanced columns instead, and each
+   name stays whole rather than being split across a column break. */
+@media (min-width: 34rem) {
+  .awaiting__group { max-width: 46rem; }
+  .awaiting__names { columns: 2; column-gap: 2.4rem; }
+  .awaiting__person { display: inline-block; width: 100%; }
+}
+@media (min-width: 60rem) {
+  .awaiting__names { columns: 3; }
+}

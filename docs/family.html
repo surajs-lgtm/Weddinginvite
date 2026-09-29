@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>We're Getting Married</title>
-<meta name="description" id="metaDesc" content="Wedding invitation and schedule.">
+<meta name="description" id="metaDesc" content="Wedding invitation and schedule for family.">
 <meta property="og:title" id="ogTitle" content="We're Getting Married">
-<meta property="og:description" id="ogDesc" content="Wedding invitation and schedule.">
+<meta property="og:description" id="ogDesc" content="Wedding invitation and schedule for family.">
 <meta name="theme-color" content="#fdfbf6">
 <!-- Marks the document as script-capable before the stylesheet loads. The
      scroll-reveal hiding rule is scoped to .js, so this one attribute decides
@@ -246,6 +246,64 @@
   </div>
 </section>
 
+<!-- ============ formal invitation (family page only) ============
+     The friends page goes straight from the names to the schedule. Relatives
+     expect the long formal wording first, so this restates the invitation in
+     the order a printed card uses it: the blessing, the two sets of parents,
+     the couple, the ask, and the date.
+
+     Every block here hides itself when the matching Family Details field is
+     blank, so an unfinished workbook never leaves an empty heading. -->
+<section class="section section--tint" id="formalInvite">
+  <span class="deco deco--mandala" aria-hidden="true"></span>
+  <p class="section__eyebrow">The invitation</p>
+  <h2 class="section__title">You Are Invited</h2>
+  <div class="formal">
+    <p class="formal__line" id="formalBlessing"></p>
+    <p class="formal__line formal__line--parents" id="formalParents"></p>
+    <p class="formal__names" id="formalNames"></p>
+    <p class="formal__ask" id="formalAsk"></p>
+    <p class="formal__dates" id="formalDates"></p>
+  </div>
+  <p class="formal__note" id="familyNoteBlock" hidden></p>
+</section>
+
+<!-- ============ rituals explained (family page only) ============
+     The single biggest thing this page adds. The friends page lists twelve
+     function names and assumes the reader knows what they are; a relative from
+     another region, or a spouse's colleague, does not. One card per function,
+     in schedule order, each with its icon.
+
+     Rendered by family.js from the Rituals sheet, and only for rows whose
+     Verified? is Yes, so an unconfirmed line is never shown. -->
+<section class="section" id="rituals">
+  <p class="section__eyebrow">What each function is</p>
+  <h2 class="section__title">The Rituals</h2>
+  <p class="section__sub">Twelve functions over four days. Here is what each one is,
+    and why it happens.</p>
+  <div class="rituals" id="ritualList"></div>
+</section>
+
+<!-- ============ family contacts ============
+     Who to call, which is the question every relative actually has. Built from
+     the Family Contacts sheet, plus the two named contacts on Family Details.
+     Hidden entirely when nothing is filled in. -->
+<section class="section section--tint" id="contactsSec" hidden>
+  <p class="section__eyebrow">If you need us</p>
+  <h2 class="section__title">Who To Call</h2>
+  <div class="contacts" id="contactList"></div>
+</section>
+
+<!-- ============ logistics ============
+     Baraat route, parking, accommodation and the gift note. Four independent
+     blocks, each hidden unless filled in, so the section collapses on its own
+     when there is nothing to say. -->
+<section class="section" id="logistics" hidden>
+  <p class="section__eyebrow">On the day</p>
+  <h2 class="section__title">Practical Details</h2>
+  <div class="logistics" id="logisticsList"></div>
+</section>
+
 <!-- ============ schedule ============ -->
 <section class="section" id="schedule">
   <p class="section__eyebrow">Celebrations</p>
@@ -402,5 +460,9 @@
 
 <script src="data.js?v=472bc6eb"></script>
 <script src="app.js?v=c64e686a"></script>
+<!-- family.js last, and only on this page. It reads the same window.WEDDING_DATA
+     and adds the sections above; app.js is shared unchanged with index.html, so
+     nothing on the friends page depends on this file. -->
+<script src="family.js?v=5c7dce24" defer></script>
 </body>
 </html>

@@ -8,12 +8,16 @@ wedding planning/
 ├── wedding-details.xlsx     <- edit this
 ├── build_site.py            <- turns the workbook into docs/data.js
 ├── make_workbook.py         <- recreates the workbook from scratch
+├── add_family_sheets.py     <- the family-only sheets' content, and a
+│                                script to add those sheets to an existing file
 ├── make_art.py              <- draws the SVG artwork
 ├── check_art.py             <- checks the SVGs for broken geometry
 └── docs/                    <- this is what gets hosted, and what Pages serves
-    ├── index.html
+    ├── index.html           <- the short version, for friends
+    ├── family.html          <- the long version, for relatives
     ├── styles.css
-    ├── app.js
+    ├── app.js               <- shared by both pages
+    ├── family.js            <- family.html only
     ├── data.js              <- generated, do not hand-edit
     └── assets/
         ├── *.svg            <- decoration (mandala, jali, toran, ...)
@@ -45,7 +49,18 @@ guests a note you are still unsure about.
 Put a venue name in the **Venue** column only for the days that are not at the
 main venue, and it renders as a small tag on that row.
 
-**Venues sheet** — one row per venue, with a Maps link for each.
+**Family Details sheet** — only for `docs/family.html`. The long formal
+wording, a message to relatives, the baraat route, parking, accommodation, and
+two named contacts. **Rituals sheet** — what each of the twelve functions is
+and why it happens, in the words you would use explaining it to family. Each
+row has its own **Verified?**: a row stays hidden until that is `Yes`, so an
+explanation you have not checked never reaches a relative. **Family Contacts
+sheet** — one row per person, for the "who do I call" section.
+
+**Wedding Functions sheet**, column H, **Family Detail** — a short note per
+function for the family page only, e.g. which side hosts it. Unlike the Note
+column this one is not gated on Verified?, because it is written by you for
+relatives rather than read off the card.
 
 **RSVP List sheet** — optional, and not the same as the web form. Leave it alone
 unless you are tracking responses yourself.
@@ -65,6 +80,16 @@ unfilled. Then open or refresh the page.
 The same script is safe to run every time you change the spreadsheet. If it
 prints `Missing wedding-details.xlsx`, run `python3 make_workbook.py` first.
 
+**`make_workbook.py` recreates the whole file and overwrites whatever is
+there.** It has no `--dry-run` and no `--help`, and it does not merge, so do not
+run it against the workbook you have been editing. Everything you have typed
+goes. It is only for starting over.
+
+**`add_family_sheets.py` overwrites three sheets** — Family Details, Rituals
+and Family Contacts — with the defaults held in that file. It exists so a
+workbook predating the family sheets can be given them. To change what the
+family page says, type into the workbook and leave that script alone.
+
 ## 3. Run it locally
 
 ```bash
@@ -82,13 +107,35 @@ A server is needed because the site loads `data.js` as a separate file; opening
   function
 - Tabbed schedule, one tab per day, with a line drawing for each ritual, and the
   running function is highlighted
-- A **Rituals** section explaining every function on the card, so a guest who
-  does not know the customs knows what they are walking into
 - Venue cards with Maps links and a copy-address button
 - Download the whole schedule as a `.ics` file, so all 12 functions land in the
   guest's phone calendar
 - RSVP form. Responses are saved in the browser and can be sent on WhatsApp
 - Share button, which uses the native share sheet on phones
+
+### Two pages
+
+`index.html` is the short one, for friends. It assumes the reader either knows
+the customs or does not need to: the couple's names, the countdown, the
+schedule, the venue, RSVP.
+
+`family.html` is the long one, for relatives, and adds four things:
+
+- **The formal invitation** in printed-card order — blessing, both sets of
+  parents, the couple, the request, the dates
+- **The Rituals**, a card per function explaining what it is and why it
+  happens. This is the real addition: a relative from another region, or your
+  spouse's colleague, would otherwise just see twelve unfamiliar names
+- **Who To Call**, from the Family Contacts sheet
+- **Practical Details** — baraat route, parking, accommodation, gift note
+
+Each of those blocks hides itself when its data is blank, so a half-filled
+workbook produces a shorter page rather than a page of empty headings.
+
+They are two URLs, not one page with a toggle: you send family
+`.../family.html` and friends `.../`, and there is no control on the page that a
+guest can press to reach the other one. `app.js` is shared between them
+unchanged; only `family.html` loads `family.js`.
 
 There is no **Edit details** button, and that is deliberate. The page is opened by
 guests, so anything on it has to be read-only: an in-page editor would let any
@@ -187,6 +234,15 @@ available. Budget roughly $10-15 for a `.com` for one year.
 The **Share** button on the page uses WhatsApp, or the native share sheet on a
 phone. To put a link in the printed card or a WhatsApp broadcast, just share the
 site's address.
+
+You have two links to hand out:
+
+- `https://surajsingh81.github.io/Weddinginvite/` — friends
+- `https://surajsingh81.github.io/Weddinginvite/family.html` — relatives
+
+Neither is secret. Anyone with the URL can read it, so `family.html` is only
+more detailed, not private. It does not carry anything you would not want a
+guest to see, and there is no password on it.
 
 ## A note on the details
 

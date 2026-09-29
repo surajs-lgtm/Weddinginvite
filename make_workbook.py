@@ -188,6 +188,13 @@ help_rows = [
     ("5. LIVE EDITS IN THE BROWSER", ""),
     ("The website also has an Edit button: type directly on the page, then Download JSON.", ""),
     ("That JSON has the same shape as this workbook, so either one can drive the site.", ""),
+    ("", ""),
+    ("6. THE FAMILY PAGE", ""),
+    ("index.html is the short version, for friends. family.html is the long one, for relatives.", ""),
+    ("It adds the formal invitation, what each ritual means, who to call, and parking and baraat.", ""),
+    ("It reads the Family Details, Rituals and Family Contacts sheets, plus the Family Detail column.", ""),
+    ("A ritual stays hidden until its Verified? is Yes, so an unconfirmed line is never shown.", ""),
+    ("Leave a field blank and that block simply does not appear on the page.", ""),
 ]
 for r in help_rows:
     ws5.append(list(r))
@@ -196,6 +203,17 @@ for row in ws5.iter_rows():
 ws5.column_dimensions["A"].width = 96
 ws5.column_dimensions["B"].width = 26
 ws5["A1"].font = Font(name="Calibri", size=14, bold=True, color=MAROON)
+
+# ---------------------------------------------------------------- Family
+# The three family sheets and the Family Detail column live in
+# add_family_sheets.py, so a workbook built from scratch and one patched with
+# that script end up with identical content. Imported here rather than copied
+# so the ritual wording is only ever edited in one place.
+import add_family_sheets  # noqa: E402  (after the sheet styles are set up)
+
+# help_sheet=False because this script writes its own How To Use sheet below,
+# which already documents the family page.
+add_family_sheets.write_family_sheets(wb, help_sheet=False)
 
 wb.save(OUT)
 print("wrote", OUT)

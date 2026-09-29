@@ -128,6 +128,91 @@ def read_details(wb):
     return details
 
 
+def read_field_sheet(wb, name):
+    """Any sheet shaped Field / Value / Notes. Returns {} when the sheet is absent.
+
+    Same reader as read_details, factored out because the family page has more
+    than one such sheet. Missing sheet must stay non-fatal: the friends page has
+    to keep working if the family sheets are deleted.
+    """
+    if name not in wb.sheetnames:
+        return {}
+    ws = wb[name]
+    out = {}
+    for field, value, *_ in ws.iter_rows(min_row=2, values_only=True):
+        if not field:
+            continue
+        key = str(field).strip()
+        if not key or key.lower().startswith("field"):
+            continue
+        out[key] = "" if is_blank(value) else str(value).strip()
+    return out
+
+
+def read_rituals(wb):
+    """The Rituals sheet, one row per function, gated on Verified?.
+
+    A row whose Verified? is anything but a Yes is dropped, so a half-researched
+    explanation never reaches a relative. Matches a function name loosely, so
+    "Madwa" in the sheet finds the "Madwa" event and "Baraat Prasthan" finds
+    "Baraat Prasthan", but a ritual that no longer matches any function is
+    simply unused.
+    """
+    if "Rituals" not in wb.sheetnames:
+        return {}
+    ws = wb["Rituals"]
+    out = {}
+    for name, what, why, note, verified in ws.iter_rows(min_row=2, values_only=True):
+        if is_blank(name) or not is_confirmed(verified):
+            continue
+        key = str(name).strip().lower()
+        out[key] = {
+            "what": "" if is_blank(what) else str(what).strip(),
+            "why": "" if is_blank(why) else str(why).strip(),
+            "note": "" if is_blank(note) else str(note).strip(),
+        }
+    return out
+
+
+def read_contacts(wb):
+    """The Family Contacts sheet, one row per person, name required."""
+    if "Family Contacts" not in wb.sheetnames:
+        return []
+    ws = wb["Family Contacts"]
+    rows = []
+    for name, relation, phone, about, note in ws.iter_rows(
+        min_row=2, values_only=True
+    ):
+        if is_blank(name):
+            continue
+        rows.append(
+            {
+                "name": str(name).strip(),
+                "relation": "" if is_blank(relation) else str(relation).strip(),
+                "phone": "" if is_blank(phone) else str(phone).strip(),
+                "about": "" if is_blank(about) else str(about).strip(),
+                "note": "" if is_blank(note) else str(note).strip(),
+            }
+        )
+    return rows
+
+
+def match_ritual(rituals, event_name):
+    """Loose lookup of a function's ritual text, '' when there is none."""
+    if not rituals or not event_name:
+        return None
+    key = str(event_name).strip().lower()
+    if key in rituals:
+        return rituals[key]
+    # "Baraat Prasthan" in the sheet vs "Baraat Prasthan" in events is already
+    # exact; this catches the other direction, where the function sheet carries
+    # a qualifier the Rituals sheet does not ("Matkor (groom) " vs "Matkor").
+    for name, text in rituals.items():
+        if name and (name in key or key in name):
+            return text
+    return None
+
+
 def read_venues(wb):
     """Sheet 3: venues, keyed by name."""
     if "Venues" not in wb.sheetnames:
@@ -249,15 +334,23 @@ def format_clock(minutes):
 
 
 # ------------------------------------------------------------------ functions
-def read_functions(wb, default_year):
-    """Sheet 2: the event schedule, grouped by day."""
+def read_functions(wb, default_year, rituals=None):
+    """Sheet 2: the event schedule, grouped by day.
+
+    The sheet grew a "Family Detail" column after "Verified?", so the row is
+    read by position rather than unpacked into named variables: a fixed 7-tuple
+    unpack would raise ValueError the moment anyone typed into column H.
+    """
     if "Wedding Functions" not in wb.sheetnames:
         return [], []
     ws = wb["Wedding Functions"]
     events = []
-    for order, date, name, time, venue, note, verified in ws.iter_rows(
-        min_row=2, values_only=True
-    ):
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        def cell(i):
+            return row[i] if i < len(row) else None
+
+        order, date, name, time = cell(0), cell(1), cell(2), cell(3)
+        venue, note, verified, family_note = cell(4), cell(5), cell(6), cell(7)
         if is_blank(name) or is_blank(date):
             continue
         parsed = parse_date(date, default_year)
@@ -265,11 +358,13 @@ def read_functions(wb, default_year):
             continue
         year, month, day = parsed
         start, end = split_time_range(time)
+        event_name = str(name).strip()
+        ritual = match_ritual(rituals, event_name)
         events.append(
             {
                 "order": int(order) if isinstance(order, (int, float)) else len(events) + 1,
                 "date": f"{year:04d}-{month:02d}-{day:02d}",
-                "event": str(name).strip(),
+                "event": event_name,
                 "time": "" if is_blank(time) else str(time).strip(),
                 "timeStart": format_clock(start),
                 "timeEnd": format_clock(end),
@@ -281,6 +376,10 @@ def read_functions(wb, default_year):
                 "verified": bool(verified) and str(verified).strip().lower().startswith("y"),
                 "icon": icon_for(name),
                 "iconSvg": icon_svg(icon_for(name)),
+                # family-page only, and not gated on Verified? because these are
+                # written for relatives rather than derived from the card
+                "familyNote": "" if is_blank(family_note) else str(family_note).strip(),
+                "ritual": ritual or {},
             }
         )
     events.sort(key=lambda e: (e["date"], e["startMinutes"] if e["startMinutes"] is not None else 0))
@@ -308,7 +407,8 @@ def build():
     default_year = int(m.group(1)) if m else datetime.now().year
     details["Wedding Year"] = str(default_year)
 
-    events, days = read_functions(wb, default_year)
+    rituals = read_rituals(wb)
+    events, days = read_functions(wb, default_year, rituals)
 
     # "Countdown Event" names the function the hero countdown targets. Match it
     # against the Functions sheet (loose compare, so "darwagar" finds
@@ -345,6 +445,13 @@ def build():
         "rsvps": rsvps,
         "countdown": countdown,
         "missing": missing,
+        # Extra material for docs/family.html. Kept in one block so the friends
+        # page, which never reads it, is unaffected if these sheets go away.
+        "family": {
+            "details": read_field_sheet(wb, "Family Details"),
+            "contacts": read_contacts(wb),
+            "rituals": rituals,
+        },
     }
 
     payload = json.dumps(data, indent=2, ensure_ascii=False)
@@ -369,38 +476,59 @@ def build():
     # This has to cover styles.css and app.js, not just data.js. Those two were
     # unstamped, which let a browser pair fresh HTML with a cached old
     # stylesheet — the combination that made the layout look scattered.
-    index = os.path.join(os.path.dirname(OUT), "index.html")
-    if os.path.exists(index):
-        with open(index, encoding="utf-8") as fh:
+    family = data["family"]
+    family_missing = sorted(
+        label for label, value in family["details"].items() if not str(value).strip()
+    )
+    unverified = sorted(
+        wb["Rituals"].cell(row=r, column=1).value
+        for r in range(2, wb["Rituals"].max_row + 1)
+        if "Rituals" in wb.sheetnames
+        and not is_confirmed(wb["Rituals"].cell(row=r, column=5).value)
+        and not is_blank(wb["Rituals"].cell(row=r, column=1).value)
+    )
+
+    stamps = {
+        "data.js": hashlib.sha1(
+            json.dumps(
+                {k: v for k, v in data.items() if k != "generated"},
+                indent=2,
+                ensure_ascii=False,
+            ).encode("utf-8")
+        ).hexdigest()[:8]
+    }
+    for asset in ("styles.css", "app.js", "family.js"):
+        path = os.path.join(os.path.dirname(OUT), asset)
+        if os.path.exists(path):
+            with open(path, "rb") as fh:
+                stamps[asset] = hashlib.sha1(fh.read()).hexdigest()[:8]
+
+    # Both pages share the assets, so both get stamped. family.html is
+    # optional: before it exists there is nothing to rewrite.
+    for page in ("index.html", "family.html"):
+        path = os.path.join(os.path.dirname(OUT), page)
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8") as fh:
             html = fh.read()
         original = html
 
-        # data.js: hash the payload, excluding the "generated" clock, otherwise
-        # the stamp churns every run and stays frozen for two edits in a minute.
-        fingerprint = {k: v for k, v in data.items() if k != "generated"}
-        stamps = {
-            "data.js": hashlib.sha1(
-                json.dumps(fingerprint, indent=2, ensure_ascii=False).encode("utf-8")
-            ).hexdigest()[:8]
-        }
-        for asset in ("styles.css", "app.js"):
-            path = os.path.join(os.path.dirname(OUT), asset)
-            if os.path.exists(path):
-                with open(path, "rb") as fh:
-                    stamps[asset] = hashlib.sha1(fh.read()).hexdigest()[:8]
-
         for asset, digest in stamps.items():
             attr = "href" if asset.endswith(".css") else "src"
+            # \?v=[^"]* rather than \?v=[0-9a-f]+ because the first build of a
+            # new page leaves a bare `family.js?v=` in the template. Requiring
+            # hex digits there would not match, and the empty query would sit
+            # in the served tag forever, defeating the cache busting.
             html = re.sub(
-                rf'({attr}="){re.escape(asset)}(\?v=[0-9a-f]+)?(")',
-                lambda m, d=digest: f"{m.group(1)}{asset}?v={d}{m.group(3)}",
+                rf'({attr}="){re.escape(asset)}(\?v=[^"]*)?"',
+                lambda m, d=digest: f"{m.group(1)}{asset}?v={d}\"",
                 html,
             )
 
         if html != original:
-            with open(index, "w", encoding="utf-8") as fh:
+            with open(path, "w", encoding="utf-8") as fh:
                 fh.write(html)
-            print("stamped " + ", ".join(f"{k}={v}" for k, v in sorted(stamps.items())))
+            print(f"stamped {page}: " + ", ".join(f"{k}={v}" for k, v in sorted(stamps.items())))
 
     if missing:
         print(f"\nStill to fill in ({len(missing)}):")
@@ -408,6 +536,15 @@ def build():
             print(f"  - {label}")
     else:
         print("\nAll detail fields are filled in.")
+
+    if family_missing:
+        print(f"\nFamily page still to fill in ({len(family_missing)}):")
+        for label in family_missing:
+            print(f"  - {label}")
+    if unverified:
+        print(f"\nRituals not yet verified, hidden from the family page ({len(unverified)}):")
+        for label in unverified:
+            print(f"  - {label}")
 
 
 if __name__ == "__main__":

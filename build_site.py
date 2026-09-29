@@ -6,6 +6,12 @@ The workbook is the source of truth. Edit the spreadsheet, run this script,
 and refresh the page.
 
 Run:  python3 build_site.py
+      python3 build_site.py --book bride-details.xlsx --out docs/data-bride.js
+
+The two-argument form is how the bride's family gets their own card. They fill
+in a copy of the workbook and the same script builds a second data file from
+it; the "Card Flank" cell inside that copy is what flips the order, so nothing
+about the layout is decided here.
 """
 import hashlib
 import json
@@ -453,10 +459,97 @@ def read_functions(wb, default_year, rituals=None):
 
 
 # ------------------------------------------------------------------ build
-def build():
-    if not os.path.exists(BOOK):
-        sys.exit(f"Missing {BOOK}\nRun:  python3 make_workbook.py  (once), then edit it.")
-    wb = load_workbook(BOOK, data_only=True)
+def card_order(details):
+    """Work out which side of the couple leads the card, and in what order.
+
+    One family prints the card, but the same wedding gets sent out from both
+    sides, and each family puts its own person first: the groom's family sends
+    "Suraj & Priyanka" with the groom's parents above the names, the bride's
+    family sends "Priyanka & Suraj" with the bride's parents above. Nothing
+    about the data changes between the two, only the order, so it is worked out
+    once here from the workbook's "Card Flank" field rather than being decided
+    in three separate places in JavaScript.
+
+    Everything the renderers need is emitted together under data["order"]:
+    the two names, the two parent blocks, the two family-member side groups,
+    and a couple line. The scripts read that block and never re-derive it, so
+    the names, the parents, the relations list and the hashtag cannot end up
+    disagreeing about which family leads.
+    """
+    raw = str(details.get("Card Flank", "") or "").strip().lower()
+    if raw in ("bride",):
+        first = "bride"
+    elif raw in ("groom", ""):
+        first = "groom"
+    else:
+        first = "groom"
+        print(f"  warning: Card Flank {details.get('Card Flank')!r} is neither"
+              " Groom nor Bride; using Groom")
+    second = "groom" if first == "bride" else "bride"
+
+    def name(side):
+        return str(details.get("%s Name" % side.title(), "") or "").strip()
+
+    a, b = name(first.title()), name(second.title())
+    pair = [n for n in (a, b) if n]
+
+    return {
+        "flank": first,
+        # Index 0 is whoever the card is for. The scripts assign names to
+        # fixed ids in this order and reorder the DOM to match.
+        "names": pair,
+        "sides": ["%s's side" % first.title(), "%s's side" % second.title(), "Both"],
+        "coupleLine": " weds ".join(pair) if pair else "",
+        "hashtag": "#%s" % "".join(n for n in pair) if pair else "",
+    }
+
+
+def write_variant_pages(folder, data_file):
+    """Copy index.html and family.html with their data tag repointed.
+
+    Everything else -- markup, styles, scripts -- is byte-identical to the
+    groom's pages on purpose. The two cards differ in one thing, which is whose
+    name is on it, and that is entirely down to the workbook. Generating the
+    copies here rather than keeping two sets by hand is what stops them drifting
+    apart after the next edit.
+
+    The stamp loop below then rewrites the ?v= on the new data file in these
+    copies exactly as it does for the originals, so the cache busting is not
+    something the second card has to remember to do.
+    """
+    written = []
+    for src_name in ("index.html", "family.html"):
+        src = os.path.join(folder, src_name)
+        if not os.path.exists(src):
+            continue
+        with open(src, encoding="utf-8") as fh:
+            html = fh.read()
+        # Only the data tag. app.js and family.js are shared, and their stamps
+        # are already identical in the source page.
+        html, n = re.subn(
+            r'(src=")data\.js(\?v=[^"]*)?"',
+            lambda m: f'{m.group(1)}{data_file}"',
+            html,
+        )
+        if not n:
+            print(f"  warning: no data.js tag found in {src_name}; "
+                  "left it alone rather than guessing")
+            continue
+        out = os.path.join(folder, src_name.replace(".html", "-bride.html"))
+        with open(out, "w", encoding="utf-8") as fh:
+            fh.write(html)
+        written.append(os.path.basename(out))
+    if written:
+        print("  variant pages: " + ", ".join(written))
+    return written
+
+
+def build(book=None, out=None):
+    book = book or BOOK
+    out = out or OUT
+    if not os.path.exists(book):
+        sys.exit(f"Missing {book}\nRun:  python3 make_workbook.py  (once), then edit it.")
+    wb = load_workbook(book, data_only=True)
 
     details = read_details(wb)
     venues = read_venues(wb)
@@ -497,15 +590,30 @@ def build():
     # "Groom's Parents" is derived from the four parent fields, so reporting it
     # would double-count a side that is already filled. Report the real fields.
     derived = {("%s's Parents" % s) for s in ("Groom", "Bride")}
+    # "Card Flank" is a setting, not something to be written. Blank means Groom.
+    derived.add("Card Flank")
     missing = [
         label
         for label, value in details.items()
         if not str(value).strip() and label not in derived
     ]
 
+    # "Wedding Date" is a human string like "11 Dec 2026", which is what belongs
+    # in the workbook. Every date the scripts format goes through
+    # new Date(iso), and appending an ISO "T00:00:00" to a non-ISO string is
+    # left to each browser's fallback parser, so the same card can print its
+    # date on one screen and not another. Emit the ISO form once, here, next to
+    # the string, and let the scripts use this one.
+    wedding_iso = ""
+    parsed = parse_date(details.get("Wedding Date"), default_year)
+    if parsed:
+        wedding_iso = f"{parsed[0]:04d}-{parsed[1]:02d}-{parsed[2]:02d}"
+
     data = {
         "generated": datetime.now().strftime("%d %b %Y, %H:%M"),
         "details": details,
+        "weddingDateISO": wedding_iso,
+        "order": card_order(details),
         "events": events,
         "days": days,
         "venues": venues,
@@ -523,18 +631,25 @@ def build():
     }
 
     payload = json.dumps(data, indent=2, ensure_ascii=False)
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    with open(OUT, "w", encoding="utf-8") as fh:
-        fh.write("// Generated by build_site.py from wedding-details.xlsx\n")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with open(out, "w", encoding="utf-8") as fh:
+        fh.write(f"// Generated by build_site.py from {os.path.basename(book)}\n")
         fh.write("// Edit the spreadsheet and re-run the script; do not hand-edit this file.\n")
         fh.write("window.WEDDING_DATA = ")
         fh.write(payload)
         fh.write(";\n")
 
-    print(f"wrote {OUT}")
+    print(f"wrote {out}")
     print(f"  {len(events)} functions across {len(days)} day(s)")
     for day in days:
         print(f"    {day['date']}: {len(day['events'])} function(s)")
+
+    # A second card is the same two pages pointing at a different data file.
+    # Generated rather than hand-copied so the two can never drift apart, and
+    # a separate file rather than a ?variant= query so the bride's family never
+    # downloads the groom's relatives list to get to their own.
+    if out != OUT:
+        write_variant_pages(os.path.dirname(out), os.path.basename(out))
 
     # Cache busting. GitHub Pages serves these with a max-age, so a guest who
     # opened the page before an update can keep seeing the old version. Stamp a
@@ -556,25 +671,41 @@ def build():
         and not is_blank(wb["Rituals"].cell(row=r, column=1).value)
     )
 
-    stamps = {
-        "data.js": hashlib.sha1(
-            json.dumps(
-                {k: v for k, v in data.items() if k != "generated"},
-                indent=2,
-                ensure_ascii=False,
-            ).encode("utf-8")
-        ).hexdigest()[:8]
-    }
+    # The data file is stamped under its own name, which is not always
+    # "data.js": a variant card is written to data-bride.js and its pages point
+    # there. Keying this on the hard-coded name left those pages pointing at an
+    # un-stamped URL, so a browser was free to keep serving the previous version
+    # of the card after a rebuild.
+    data_name = os.path.basename(out)
+    data_stamp = hashlib.sha1(
+        json.dumps(
+            {k: v for k, v in data.items() if k != "generated"},
+            indent=2,
+            ensure_ascii=False,
+        ).encode("utf-8")
+    ).hexdigest()[:8]
+
+    # The stylesheet and the two scripts are shared by every card, so they carry
+    # the same stamp on all of them. Only the data file differs.
+    stamps = {}
     for asset in ("styles.css", "app.js", "family.js"):
-        path = os.path.join(os.path.dirname(OUT), asset)
+        path = os.path.join(os.path.dirname(out), asset)
         if os.path.exists(path):
             with open(path, "rb") as fh:
                 stamps[asset] = hashlib.sha1(fh.read()).hexdigest()[:8]
+    stamps[data_name] = data_stamp
 
-    # Both pages share the assets, so both get stamped. family.html is
-    # optional: before it exists there is nothing to rewrite.
-    for page in ("index.html", "family.html"):
-        path = os.path.join(os.path.dirname(OUT), page)
+    # Each build stamps its own pages and no others, so a variant build never
+    # rewrites the originals and the original build never reaches for a page
+    # that may not exist. family.html is optional: before it exists there is
+    # nothing to rewrite.
+    if data_name == "data.js":
+        pages = ("index.html", "family.html")
+    else:
+        pages = ("index-bride.html", "family-bride.html")
+
+    for page in pages:
+        path = os.path.join(os.path.dirname(out), page)
         if not os.path.exists(path):
             continue
         with open(path, encoding="utf-8") as fh:
@@ -632,4 +763,10 @@ def build():
 
 
 if __name__ == "__main__":
-    build()
+    import argparse
+
+    ap = argparse.ArgumentParser(description="Build site data from the workbook.")
+    ap.add_argument("--book", default=BOOK, help="workbook to read")
+    ap.add_argument("--out", default=OUT, help="data.js to write")
+    args = ap.parse_args()
+    build(args.book, args.out)

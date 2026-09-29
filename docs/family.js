@@ -22,10 +22,30 @@
 
   var data = window.WEDDING_DATA || {};
   var D = data.details || {};
+
+  /* Matches app.js: the language's own weekday and month names, en-GB unless
+     the data says the card is in Hindi. */
+  var DATE_LOCALE = data.lang === "hi" ? "hi-IN" : "en-GB";
+
+  /* The one phrase this file writes that app.js does not already own: the note
+     under the rituals heading, which is rewritten to match however many
+     verified rituals are actually shown. English unless data.ui says else. */
+  function ritualsSub(shown, total) {
+    var ui = data.ui || {};
+    if (ui.ritualsExplained) {
+      return ui.ritualsExplained.replace("{shown}", shown).replace("{total}", total);
+    }
+    return shown + " of the " + total +
+      " functions are explained here. The rest are listed in the schedule below.";
+  }
   var events = data.events || [];
   var family = data.family || {};
   var F = family.details || {};
   var contacts = family.contacts || [];
+  /* Which family this card was printed for, worked out once by build_site.py
+     from the workbook's "Card Flank". The groom's family sends the card with
+     Suraj first, the bride's family with Priyanka first. */
+  var order = data.order || { flank: "groom", names: [], sides: [] };
 
   function $(id) { return document.getElementById(id); }
 
@@ -45,7 +65,7 @@
   function niceDate(iso) {
     var d = new Date(iso + "T00:00:00");
     if (isNaN(d.getTime())) return iso;
-    return d.toLocaleDateString("en-GB", {
+    return d.toLocaleDateString(DATE_LOCALE, {
       weekday: "long", day: "numeric", month: "long", year: "numeric"
     });
   }
@@ -69,12 +89,13 @@
        block just above already names both sets, under a FATHER / MOTHER
        label. Printing them again here read as a mistake. */
 
-    var groom = D["Groom Name"] || "";
-    var bride = D["Bride Name"] || "";
+    /* Names lead with whoever printed the card, from the same data.order the
+       hero and the card cover read. */
     var names = $("formalNames");
     if (names) {
-      if (groom || bride) {
-        names.textContent = [groom, bride].filter(Boolean).join("  &  ");
+      var pair = (order && order.names) || [];
+      if (pair.length) {
+        names.textContent = pair.join("  &  ");
         names.hidden = false;
       } else {
         names.hidden = true;
@@ -99,8 +120,16 @@
     }
 
     /* Hide the whole section only when it would be entirely empty, which
-       cannot happen once the names are filled in. Kept for a blank workbook. */
-    var any = blessing || parents || groom || bride || ask || dates;
+       cannot happen once the names are filled in. Kept for a blank workbook.
+
+       `parents` used to be in this chain. It was a leftover from before the
+       parents were dropped from this block, and was never declared in this
+       file. It did no damage only because `blessing` is truthy today, so the
+       `||` short-circuited before the name was reached. Blank out
+       "Family Greeting" and "Opening Blessing Line" and the ReferenceError
+       escapes this IIFE and the outer one, which silently skipped the
+       rituals, the family list, the contacts and the logistics after it. */
+    var any = blessing || (order.names || []).length || ask || dates;
     sec.hidden = !any;
   })();
 
@@ -117,7 +146,13 @@
 
     events.forEach(function (ev) {
       var r = ev.ritual || {};
-      if (!r.what && !r.why && !r.familyNote) return;
+      /* Only the verified ritual text opens a card. This used to read
+         `r.familyNote` as well, but familyNote lives on the event, not the
+         ritual, so that term was always undefined and the check rested
+         entirely on what/why. Left as the explicit pair it actually is: the
+         guarantee that nothing unverified renders is build_site.py dropping
+         those rows at the Rituals sheet, and `ritual` is `{}` without one. */
+      if (!r.what && !r.why) return;
 
       var card = el("article", "ritual");
 
@@ -153,8 +188,7 @@
     if (shown && shown !== events.length) {
       var sub = sec.querySelector(".section__sub");
       if (sub) {
-        sub.textContent = shown + " of the " + events.length +
-          " functions are explained here. The rest are listed in the schedule below.";
+        sub.textContent = ritualsSub(shown, events.length);
       }
     }
 
@@ -176,7 +210,14 @@
 
     var title = F["Awaiting Section Title"] || "Eagerly Awaiting Your Presence";
     text($("awaitingTitle"), title);
-    text($("awaitingNote"), F["Awaiting Section Note"] || "");
+
+    /* The paragraph ships with the `hidden` attribute, so writing text into it
+       is not enough — it has to be un-hidden the way the family note above
+       is, or anything typed into "Awaiting Section Note" renders nowhere,
+       on screen or in print, without a single error. */
+    var awaitNote = $("awaitingNote");
+    text(awaitNote, F["Awaiting Section Note"] || "");
+    if (awaitNote) awaitNote.hidden = !String(F["Awaiting Section Note"] || "").trim();
 
     if (!members.length) {
       sec.hidden = true;
@@ -185,24 +226,30 @@
 
     /* Keep the workbook's side order stable and put anything unrecognised last
        under no heading, rather than sorting names around and hiding which
-       family a relative belongs to. */
-    var order = ["Groom's side", "Bride's side", "Both"];
+       family a relative belongs to.
+
+       The leading family comes first, so the bride's version prints her own
+       relatives before his. Falls back to the old fixed order if the build
+       somehow left data.order out. */
+    var sideOrder = (order && order.sides && order.sides.length)
+      ? order.sides
+      : ["Groom's side", "Bride's side", "Both"];
     var groups = [];
-    order.forEach(function (side) {
+    sideOrder.forEach(function (side) {
       var inGroup = members.filter(function (m) {
         return String(m.side || "").trim() === side;
       });
       if (inGroup.length) groups.push({ side: side, people: inGroup });
     });
     var other = members.filter(function (m) {
-      return order.indexOf(String(m.side || "").trim()) === -1;
+      return sideOrder.indexOf(String(m.side || "").trim()) === -1;
     });
     if (other.length) groups.push({ side: "", people: other });
 
-    /* Only label the groups when there is more than one. This card is printed
-       by the groom's family, so a single list headed "Groom's side" tells the
-       reader nothing they do not already know from who sent it. If relatives
-       are later added to the bride's side, both headings come back. */
+    /* Only label the groups when there is more than one. The card is printed
+       by one family, so a single list headed by that family's own side tells
+       the reader nothing they do not already know from who sent it. If
+       relatives are later added to the other side, both headings come back. */
     var showSide = groups.length > 1;
 
     groups.forEach(function (group) {

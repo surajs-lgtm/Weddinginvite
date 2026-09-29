@@ -29,3 +29,25 @@ wedding-details.xlsx
 # out of the repo for the same reason wedding-details.xlsx does.
 family_list.xlsx
 ~$*.xlsx
+
+# The copy handed to the bride, made by make_bride_workbook.py. It is built
+# from wedding-details.xlsx and inherits everything in it, including the
+# relatives' names and whatever is in the RSVP List sheet, so it is ignored for
+# the same reason the main workbook is. It is a file to send to a person, not a
+# file to publish: generate it fresh when it is needed rather than committing
+# one.
+bride-details.xlsx
+
+# The Hindi demo from make_hindi_demo.py. Local only, by design -- it exists so
+# the Devanagari typography can be looked at before deciding whether to do a
+# real Hindi card. The generated pages and their data file are all ignored so a
+# demo can never end up deployed by accident.
+docs/hindi-demo-*.html
+docs/data-hindi.js
+
+# Test builds of the bride's version, made with a throwaway workbook to check
+# the ordering. Same reason: they carry real names from the main workbook, and
+# they are not the finished card.
+docs/data-bride.js
+docs/index-bride.html
+docs/family-bride.html

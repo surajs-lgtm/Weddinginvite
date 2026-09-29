@@ -20,7 +20,7 @@
     if (!iso) return "";
     var d = new Date(iso + "T00:00:00");
     if (isNaN(d)) return iso;
-    return d.toLocaleDateString("en-GB", opts || { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    return d.toLocaleDateString(DATE_LOCALE, opts || { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   }
   function todayISO() {
     var n = new Date();
@@ -34,6 +34,72 @@
      run `python3 build_site.py` instead. */
   var data = JSON.parse(JSON.stringify(window.WEDDING_DATA || { details: {}, events: [], days: [], venues: [] }));
   var D = data.details || {};
+
+  /* Weekdays and month names come from the browser's own date data rather than
+     a table kept in this file, so a translated card gets the names, and the
+     date order, of the language it is actually in. en-GB is the default, which
+     is what the English card has always used. */
+  var DATE_LOCALE = data.lang === "hi" ? "hi-IN" : "en-GB";
+
+  /* The handful of phrases this file composes itself, rather than reading whole
+     from the workbook -- the countdown label, the schedule subtitle, the venue
+     card's caption and its two buttons. They are English here, and a translated
+     card supplies its own in data.ui. Reading them from one table means a
+     translation does not have to be chased through the script. */
+  var UI_DEFAULT = {
+    countingDownTo: "Counting down to",
+    countingDownToWedding: "Counting down to the wedding",
+    allCelebrations: "All celebrations,",
+    venueCaption: "Wedding / main function",
+    openInMaps: "Open in Maps",
+    copyAddress: "Copy address"
+  };
+  var UI = data.ui || {};
+  function ui(key) { return UI[key] || UI_DEFAULT[key]; }
+
+  /* Which side of the couple this card was printed for. build_site.py works
+     this out once from the workbook's "Card Flank" and hands it over in
+     data.order, so the names, the parents, the relations list and the
+     hashtag all read the same answer instead of each deciding for itself. */
+  var ORDER = data.order || { flank: "groom", names: [], sides: [] };
+  var LEAD = ORDER.flank === "bride" ? "bride" : "groom";
+  var FOLLOW = LEAD === "bride" ? "groom" : "bride";
+
+  /* Put the two names in the order the card leads.
+
+     These move real nodes, not CSS `order`. Ordering alone looks correct but
+     leaves the document order alone, and this card is read in that order by a
+     screen reader, printed in it, and indexed in it -- so a card whose whole
+     point is that Priyanka comes first would still announce "Suraj and
+     Priyanka" to anyone not looking at the screen. The ampersand is the middle
+     element and has to stay the middle element, so it is put back between the
+     two after the pair has been swapped. Idempotent: doing it twice is a no-op. */
+  function placeNames(groomId, brideId, ampId) {
+    var groom = $(groomId), bride = $(brideId);
+    if (!groom || !bride) return;
+    groom.textContent = D["Groom Name"] || "";
+    bride.textContent = D["Bride Name"] || "";
+    var lead = LEAD === "bride" ? bride : groom;
+    var follow = LEAD === "bride" ? groom : bride;
+    var parent = groom.parentNode;
+    if (!parent) return;
+    parent.insertBefore(lead, follow);
+    var amp = ampId && $(ampId);
+    if (amp && amp.parentNode === parent) parent.insertBefore(amp, follow);
+  }
+
+  /* The two family blocks are siblings in a flex row, with a rule between
+     them that is a sibling too. All three move, so the rule stays between the
+     two families instead of being pushed outside them. */
+  function placeFamilies(families) {
+    if (!families) return;
+    var lead = families.querySelector('[data-side="' + LEAD + '"]');
+    var follow = families.querySelector('[data-side="' + FOLLOW + '"]');
+    var rule = families.querySelector(".family__divider");
+    if (!lead || !follow) return;
+    families.insertBefore(lead, follow);
+    if (rule) families.insertBefore(rule, follow);
+  }
   var events = data.events || [];
   var days = data.days || [];
   var venues = data.venues || [];
@@ -57,8 +123,7 @@
     el.textContent = value || fallback || "";
   }
   setText("heroBlessing", D["Opening Blessing Line"], "With the blessings of our families");
-  setText("heroGroom", D["Groom Name"], "Groom");
-  setText("heroBride", D["Bride Name"], "Bride");
+  placeNames("heroGroom", "heroBride", "heroAmp");
     /* Invitation Line, not Couple Line (short). The latter renders as "Suraj
        weds Priyanka" directly beneath the names, which already read "Suraj &
        Priyanka" — the same two names twice in three lines. The invitation
@@ -67,14 +132,30 @@
        to a generic phrase, so an empty workbook still renders a sensible line. */
     setText("heroLine", D["Invitation Line"] || D["Couple Line (short)"], "Together with their families");
 
-  var heroDate = D["Wedding Date"] || (events[0] && events[0].date) || "";
+  /* build_site.py emits weddingDateISO alongside the workbook's human string
+     because "11 Dec 2026" + "T00:00:00" is not a date any engine is obliged to
+     parse, and whether the hero showed its date came down to which fallback
+     parser the browser reached for first. The ISO value is the same string
+     every time.
+
+     The separators are static markup, so a failed parse would leave two bare
+     gold dots sitting where the date should be. Drop the whole group instead. */
+  var heroDate = data.weddingDateISO || "";
   if (heroDate) {
     var hd = new Date(heroDate + "T00:00:00");
-    if (!isNaN(hd)) {
-      setText("heroDay", hd.toLocaleDateString("en-GB", { day: "numeric" }));
-      setText("heroMonth", hd.toLocaleDateString("en-GB", { month: "long" }));
+    if (!isNaN(hd.getTime())) {
+      setText("heroDay", hd.toLocaleDateString(DATE_LOCALE, { day: "numeric" }));
+      setText("heroMonth", hd.toLocaleDateString(DATE_LOCALE, { month: "long" }));
       setText("heroYear", hd.getFullYear());
+    } else {
+      heroDate = "";
     }
+  } else {
+    heroDate = "";
+  }
+  if (!heroDate) {
+    var hdGroup = $("heroDate");
+    if (hdGroup) hdGroup.hidden = true;
   }
   setText("topHashtag", D["Hashtag"]);
   setText("footHashtag", D["Hashtag"]);
@@ -105,6 +186,9 @@
     if (column && column.parentNode) column.parentNode.removeChild(column);
   });
   $("families").hidden = !anyParent;
+  /* After the empty columns are gone, put whichever family printed the card
+     on the left. The divider between them is symmetric, so it needs no move. */
+  placeFamilies($("families"));
 
   if (D["Quote / Verse"]) {
     setText("verseText", D["Quote / Verse"]);
@@ -120,7 +204,7 @@
     targetTime = new Date(target + "T00:00:00");
     targetTime.setMinutes(mins);
   }
-  setText("countdownLabel", (data.countdown && data.countdown.event) ? "Counting down to " + data.countdown.event : "Counting down to the wedding");
+  setText("countdownLabel", (data.countdown && data.countdown.event) ? ui("countingDownTo") + " " + data.countdown.event : ui("countingDownToWedding"));
 
   // The Baraat feature card is captioned from the same countdown object, so it
   // can never drift out of step with the countdown above it.
@@ -153,7 +237,7 @@
   setInterval(tick, 1000);
 
   /* ============================================================ schedule */
-  $("scheduleSub").textContent = D["Function Dates"] ? "All celebrations, " + D["Function Dates"] : "";
+  $("scheduleSub").textContent = D["Function Dates"] ? ui("allCelebrations") + " " + D["Function Dates"] : "";
 
   var tabs = $("dayTabs"), panels = $("dayPanels");
   if (!days.length) {
@@ -169,8 +253,8 @@
       tab.type = "button";
       tab.setAttribute("role", "tab");
       tab.setAttribute("aria-selected", i === activeIndex ? "true" : "false");
-      tab.innerHTML = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) +
-        '<span class="tab__dow">' + esc(d.toLocaleDateString("en-GB", { weekday: "long" })) + "</span>";
+      tab.innerHTML = d.toLocaleDateString(DATE_LOCALE, { day: "numeric", month: "short" }) +
+        '<span class="tab__dow">' + esc(d.toLocaleDateString(DATE_LOCALE, { weekday: "long" })) + "</span>";
       tab.addEventListener("click", function () { selectDay(i); });
       tabs.appendChild(tab);
     });
@@ -325,7 +409,7 @@
         name: D["Primary Venue Name"],
         address: D["Primary Venue Address"],
         maps: D["Google Maps Link"],
-        functions: "Wedding / main function"
+        functions: ui("venueCaption")
       }];
     }
     $("venue").hidden = !list.length;
@@ -340,8 +424,8 @@
         '<h3 class="venue__name">' + esc(v.name) + "</h3>" +
         (v.address ? '<p class="venue__addr">' + esc(v.address) + "</p>" : "") +
         '<div class="venue__links">' +
-          '<a class="btn btn--gold btn--sm" target="_blank" rel="noopener" href="' + esc(mapHrefFor(v)) + '">Open in Maps</a>' +
-          '<button class="btn btn--ghost btn--sm" data-copy="' + esc(v.address || v.name) + '" type="button">Copy address</button>' +
+          '<a class="btn btn--gold btn--sm" target="_blank" rel="noopener" href="' + esc(mapHrefFor(v)) + '">' + esc(ui("openInMaps")) + "</a>" +
+          '<button class="btn btn--ghost btn--sm" data-copy="' + esc(v.address || v.name) + '" type="button">' + esc(ui("copyAddress")) + "</button>" +
         "</div>";
       vgrid.appendChild(card);
     });
@@ -512,9 +596,6 @@
   /* Re-check which function is running once the page has finished loading. */
   window.addEventListener("load", function () { markLive(); });
 
-  /* Rendered before initReveal below, so the ritual cards exist in the DOM by
-     the time it goes looking for targets to animate. */
-
   /* ============================================================ scroll reveal
      Runs last, so every card the renderers created is in the DOM before it
      looks for them. Two deliberate choices:
@@ -525,8 +606,17 @@
        page would go permanently blank. Gating the attribute on the feature
        means any other environment simply never gets the hiding rule.
      - Each target is unobserved once it has been revealed, so scrolling back
-       up re-runs nothing and there is no long-lived observer cost. */
-  (function initReveal() {
+       up re-runs nothing and there is no long-lived observer cost.
+
+     This is deferred to DOMContentLoaded rather than run inline. app.js is a
+     blocking script at the foot of the body, so anything it does here happens
+     the moment it is parsed — which on family.html is *before* family.js, a
+     deferred script, has created a single ritual card, contact or name. The
+     comment above used to claim the opposite. Deferred scripts all run before
+     DOMContentLoaded, so waiting for that event is what puts the family
+     page's cards in the DOM first; on the friends page it is simply a few
+     milliseconds later and nothing else changes. */
+  function initReveal() {
     if (!("IntersectionObserver" in window)) return;
     if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -568,7 +658,13 @@
       nodes.forEach(function (n) { n.classList.add("is-in"); });
       io.disconnect();
     }, 8000);
-  })();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initReveal);
+  } else {
+    initReveal();
+  }
 })();
 
 /* ============================================================ card intro
@@ -592,6 +688,19 @@
   if (!intro) return;
 
   var D = (window.WEDDING_DATA || {}).details || {};
+  /* Same order block the hero read, re-read from the global because this is a
+     separate IIFE. Both come from one value, so they cannot disagree. */
+  var INTRO_ORDER = (window.WEDDING_DATA || {}).order || {};
+  var INTRO_LEAD = INTRO_ORDER.flank === "bride" ? "bride" : "groom";
+  var INTRO_FOLLOW = INTRO_LEAD === "bride" ? "groom" : "bride";
+  /* Declared again rather than borrowed from the IIFE above. That one is
+     closed by the time this runs, so a reference to it here would not be a
+     compile error -- it would be `undefined` at runtime, and
+     toLocaleDateString(undefined) quietly falls back to the browser's own
+     locale. The card date would then read in whatever language the guest's
+     device is set to instead of the card's. */
+  var INTRO_LANG = (window.WEDDING_DATA || {}).lang;
+  var INTRO_DATE_LOCALE = INTRO_LANG === "hi" ? "hi-IN" : "en-GB";
   function field(name) { return String(D[name] || "").trim(); }
   function put(id, value) {
     var el = document.getElementById(id);
@@ -599,22 +708,66 @@
     return !!value;
   }
 
-  put("introGroom", field("Groom Name"));
-  put("introBride", field("Bride Name"));
-  put("introParentsGroom", field("Groom's Parents"));
-  put("introParentsBride", field("Bride's Parents"));
+  /* Names and parents both lead with whoever printed the card. The two spans
+     keep their role-named ids and are physically moved, not just restyled, so
+     the order a screen reader reads is the order the card shows. */
+  var INTRO_GROOM = { name: "introGroom", parents: "introParentsGroom" };
+  var INTRO_BRIDE = { name: "introBride", parents: "introParentsBride" };
+  var leadPair = INTRO_LEAD === "bride" ? INTRO_BRIDE : INTRO_GROOM;
+  var followPair = INTRO_LEAD === "bride" ? INTRO_GROOM : INTRO_BRIDE;
+
+  put(leadPair.name, field(INTRO_LEAD === "bride" ? "Bride Name" : "Groom Name"));
+  put(followPair.name, field(INTRO_FOLLOW === "bride" ? "Bride Name" : "Groom Name"));
+  put(leadPair.parents, field((INTRO_LEAD === "bride" ? "Bride" : "Groom") + "'s Parents"));
+  put(followPair.parents, field((INTRO_FOLLOW === "bride" ? "Bride" : "Groom") + "'s Parents"));
+
+  /* Names first: the ampersand has to stay between the two, so it is put back
+     in the middle after the pair is swapped. */
+  (function orderIntroNames() {
+    var lead = document.getElementById(leadPair.name);
+    var follow = document.getElementById(followPair.name);
+    if (!lead || !follow) return;
+    var parent = lead.parentNode;
+    if (!parent) return;
+    parent.insertBefore(lead, follow);
+    var amp = document.getElementById("introAmp");
+    if (amp && amp.parentNode === parent) parent.insertBefore(amp, follow);
+  })();
+
+  /* Then the parents. The two `.card__parent` blocks are what sit side by
+     side, so those move -- the name span inside one of them is not a flex item
+     and ordering it would do nothing. */
+  (function orderIntroParents() {
+    var leadSpan = document.getElementById(leadPair.parents);
+    var followSpan = document.getElementById(followPair.parents);
+    if (!leadSpan || !followSpan || !leadSpan.closest || !followSpan.closest) return;
+    var lead = leadSpan.closest(".card__parent");
+    var follow = followSpan.closest(".card__parent");
+    if (lead && follow && lead.parentNode) lead.parentNode.insertBefore(lead, follow);
+  })();
+
   put("introBlessing", field("Opening Blessing Line") || "With the blessings of our families");
   put("introInvite", field("Invitation Line") || "request the honour of your presence");
 
   /* Date only: "Friday 11 Dec". The year and the start time are left off so
      the card carries the one thing a guest checks first, and nothing else.
 
-     This is a card-local value on purpose. The workbook's "Wedding Date" is
-     12 Dec, which is the Vidai (Milap) and is what the countdown and the day
-     tabs are built from; the day printed on the card is the wedding itself, on
-     Friday 11 Dec 2026. Keep them separate rather than reconciling the data,
-     because moving the field would move the whole schedule with it. */
-  put("introDate", "Friday 11 Dec");
+     Derived from the ISO date build_site.py emits rather than typed in. It was
+     the only date on the page not coming from the workbook, so moving the
+     wedding in the spreadsheet moved the hero, the countdown and the four day
+     tabs while this line stayed on 11 Dec.
+
+     Formatted here rather than with niceDate() because that is in the other
+     IIFE and this one is deliberately standalone. */
+  var introISO = (window.WEDDING_DATA || {}).weddingDateISO;
+  var introWhen = "";
+  if (introISO) {
+    var id = new Date(introISO + "T00:00:00");
+    if (!isNaN(id.getTime())) {
+      introWhen = id.toLocaleDateString(INTRO_DATE_LOCALE, { weekday: "long", day: "numeric", month: "short" });
+    }
+  }
+  put("introDate", introWhen);
 
   /* Drop a line rather than print an empty one. A wedding card with a blank
      ruled space looks like a bug; a shorter card looks intentional. */

@@ -1173,7 +1173,20 @@ body::after {
   .bg, .intro, .actions, .topbar, .hero__cta, .rsvp-form, .tabs, .saved,
   .deco, body::after { display: none !important; }
   body { background: #fff; padding-bottom: 0; }
-  .section { padding: 18px 0; page-break-inside: avoid; }
+  /* The `page-break-inside: avoid` that used to sit here was on .section, which
+     covers the schedule, the family list and the rituals — all of them several
+     pages tall. An unsatisfiable break-inside is supposed to be dropped, but
+     Chrome and Safari treat it greedily and push the whole block to the next
+     page first, leaving large blank pages before the three tallest sections.
+     Sections now flow, and the individual cards that should not be split are
+     named explicitly instead. */
+  .section { padding: 18px 0; }
+  .ritual, .contact, .logistic, .event, .venue, .count, .day-panel, .family {
+    break-inside: avoid;
+  }
+  .ritual, .contact, .logistic, .family {
+    box-shadow: none; border-color: #ccc; background: #fff;
+  }
   .hero__card { box-shadow: none; border: 1px solid #ddd; background: #fff; }
   .count, .event, .venue { box-shadow: none; border-color: #ccc; }
   .day-panel[hidden] { display: block !important; }
@@ -1393,8 +1406,8 @@ body::after {
 .awaiting__names { list-style: none; margin: 0; padding: 0; }
 .awaiting__person { margin: 0 0 .85rem; break-inside: avoid; }
 .awaiting__person:last-child { margin-bottom: 0; }
-.awaiting__name { display: block; font-family: var(--display); font-size: 1.15rem; font-weight: 500; color: var(--ink); }
-.awaiting__detail { display: block; font-size: .8rem; color: var(--ink-soft); margin-top: .1rem; }
+.awaiting__name { display: block; font-family: var(--display); font-size: 1.15rem; font-weight: 500; color: var(--ink); overflow-wrap: break-word; }
+.awaiting__detail { display: block; font-size: .8rem; color: var(--ink-soft); margin-top: .1rem; overflow-wrap: break-word; }
 
 /* A real list of relatives runs to fifteen or twenty names, which as one tall
    column is a lot of scrolling for a section nobody needs to read closely.
@@ -1406,5 +1419,11 @@ body::after {
   .awaiting__person { display: inline-block; width: 100%; }
 }
 @media (min-width: 60rem) {
+  /* The group has to widen along with the column count. Left at 46rem, the
+     third column was bought by making all three about a third narrower than
+     the two above it, and the longest name in the list ran to 91% of the
+     column. body clips overflow rather than scrolling it, so a long name was
+     cut off mid-word with no way to reach the rest. */
+  .awaiting__group { max-width: 64rem; }
   .awaiting__names { columns: 3; }
 }

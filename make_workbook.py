@@ -63,6 +63,11 @@ rows = [
     ("Hashtag", FILLIN, "e.g. #AaravWedsAisha2026"),
     ("Quote / Verse", FILLIN, "Optional shloka shown near the end"),
     ("Accent Style", "classic", "classic | royal | temple - changes site colours"),
+    # Which family this card is printed for. Everything else about the wedding
+    # is the same for both, so this one cell is the whole difference: it decides
+    # whose name leads, whose parents sit above the names, whose relatives are
+    # listed first, and which way the couple line reads. Leave blank for Groom.
+    ("Card Flank", "Groom", "Groom | Bride - whose name comes first on the card"),
 ]
 for r in rows:
     ws.append(list(r))

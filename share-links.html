@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wedding card &middot; share links</title>
+<style>
+  :root {
+    --cream: #fdf8f1;
+    --ink: #2a2622;
+    --ink-soft: #6b6158;
+    --gold: #b8860b;
+    --gold-soft: #f3e6c8;
+    --line: #e6dcc9;
+    --green: #1f6f43;
+    --card: #fffcf7;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px 20px 64px;
+    background: var(--cream);
+    color: var(--ink);
+    font: 400 17px/1.6 "Jost", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .wrap { max-width: 940px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 40px; }
+
+  .eyebrow {
+    margin: 0 0 6px;
+    font-size: 12px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    font: 400 34px/1.2 "Cormorant Garamond", Georgia, serif;
+    letter-spacing: .01em;
+  }
+
+  header p {
+    margin: 0 auto;
+    max-width: 46ch;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+
+  .grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .card.bride { border-color: var(--gold-soft); background: #fffdf6; }
+
+  .card h2 {
+    margin: 0;
+    font: 500 22px/1.3 "Cormorant Garamond", Georgia, serif;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold-soft);
+    background: var(--gold-soft);
+    border-radius: 999px;
+    padding: 3px 10px;
+    margin-bottom: 8px;
+  }
+
+  .for {
+    margin: 0;
+    font-size: 14.5px;
+    color: var(--ink-soft);
+  }
+
+  .url {
+    font: 400 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--ink-soft);
+    background: #f6f0e4;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    word-break: break-all;
+    user-select: all;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 92px;
+    resize: vertical;
+    font: inherit;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  textarea:focus, .url:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  button {
+    flex: 1 1 auto;
+    min-height: 46px;
+    padding: 12px 18px;
+    font: 500 15px/1 "Jost", sans-serif;
+    letter-spacing: .01em;
+    border-radius: 9px;
+    border: 1px solid var(--gold);
+    background: var(--gold);
+    color: #fff;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button.ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line);
+  }
+
+  button:active { transform: translateY(1px); }
+
+  .status {
+    min-height: 1.2em;
+    font-size: 13px;
+    color: var(--green);
+    margin: 0;
+  }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  footer p { margin: 0 0 10px; }
+  footer code {
+    font-size: 12.5px;
+    background: #f6f0e4;
+    border-radius: 4px;
+    padding: 2px 6px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Suraj &amp; Priyanka</p>
+    <h1>Wedding card &middot; share links</h1>
+    <p>Pick the version for whoever you are writing to. Each button opens WhatsApp with the message already typed &mdash; you only choose the contact and press send.</p>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    <p><strong>Which is which.</strong> Friends get the short card. Family get the long one, with the schedule, parking, baraat and the ritual explanations. Priyanka's two are identical to the groom's except her name comes first and her family sits on top.</p>
+    <p><strong>Editing.</strong> Any message can be changed before you share it. If a link ever changes, edit the <code>LINKS</code> array at the bottom of this file.</p>
+    <p><strong>Not deployed.</strong> This page is a private helper on this computer only. The four links above are the live ones.</p>
+  </footer>
+
+</div>
+
+<script>
+var LINKS = [
+  {
+    key: "friends",
+    title: "Friends",
+    tag: "Friends",
+    for: "For friends, colleagues and anyone who wants the essentials. The short card.",
+    url: "https://surajsingh81.github.io/Weddinginvite/",
+    msg: "Namaste! Here is the wedding invitation for Suraj and Priyanka. Do have a look when you get a chance."
+  },
+  {
+    key: "family",
+    title: "Family",
+    tag: "Family",
+    for: "For relatives. The long card, with the four-day schedule, parking, baraat and what each function is.",
+    url: "https://surajsingh81.github.io/Weddinginvite/family.html",
+    msg: "Namaste! Here is the detailed invitation for Suraj and Priyanka, with the full schedule, venue, parking and baraat details. Please do have a look."
+  },
+  {
+    key: "bride-friends",
+    title: "Priyanka &mdash; friends card",
+    tag: "Priyanka's family",
+    bride: true,
+    for: "The same short card, but with Priyanka's name first and her family's names above it.",
+    url: "https://surajsingh81.github.io/Weddinginvite/index-bride.html",
+    msg: "Namaste! Here is the wedding invitation for Suraj and Priyanka. Do have a look when you get a chance."
+  },
+  {
+    key: "bride-family",
+    title: "Priyanka &mdash; family card",
+    tag: "Priyanka's family",
+    bride: true,
+    for: "The long card from Priyanka's side. Same as the family card, ordered her way round.",
+    url: "https://surajsingh81.github.io/Weddinginvite/family-bride.html",
+    msg: "Namaste! Here is the detailed invitation for Suraj and Priyanka, with the full schedule, venue, parking and baraat details. Please do have a look."
+  }
+];
+
+var grid = document.getElementById("grid");
+
+LINKS.forEach(function (item) {
+  var card = document.createElement("section");
+  card.className = "card" + (item.bride ? " bride" : "");
+
+  var tag = document.createElement("span");
+  tag.className = "tag";
+  tag.textContent = item.tag;
+
+  var h = document.createElement("h2");
+  h.textContent = item.title;
+
+  var forLine = document.createElement("p");
+  forLine.className = "for";
+  forLine.textContent = item.for;
+
+  var url = document.createElement("div");
+  url.className = "url";
+  url.textContent = item.url;
+  url.title = "Tap to select";
+
+  var ta = document.createElement("textarea");
+  ta.value = item.msg;
+  ta.setAttribute("aria-label", "Message for " + item.title);
+
+  var status = document.createElement("p");
+  status.className = "status";
+  status.setAttribute("role", "status");
+
+  var copyBtn = document.createElement("button");
+  copyBtn.className = "ghost";
+  copyBtn.type = "button";
+  copyBtn.textContent = "Copy link";
+
+  var shareBtn = document.createElement("button");
+  shareBtn.type = "button";
+  shareBtn.textContent = "Share on WhatsApp";
+
+  copyBtn.addEventListener("click", function () {
+    copy(url.textContent).then(function (ok) {
+      status.textContent = ok ? "Copied." : "Press and hold the link above to copy.";
+      setTimeout(function () { status.textContent = ""; }, 2500);
+    });
+  });
+
+  shareBtn.addEventListener("click", function () {
+    var text = ta.value.trim() + "\n\n" + url.textContent;
+    window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener");
+  });
+
+  var row = document.createElement("div");
+  row.className = "row";
+  row.appendChild(copyBtn);
+  row.appendChild(shareBtn);
+
+  card.appendChild(tag);
+  card.appendChild(h);
+  card.appendChild(forLine);
+  card.appendChild(url);
+  card.appendChild(ta);
+  card.appendChild(row);
+  card.appendChild(status);
+  grid.appendChild(card);
+});
+
+// Clipboard API is unavailable on file:// in some browsers, so fall back to a
+// hidden textarea and execCommand, which still works there.
+function copy(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return legacyCopy(text); });
+  }
+  return Promise.resolve(legacyCopy(text));
+}
+
+function legacyCopy(text) {
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed";
+  ta.style.top = "-1000px";
+  document.body.appendChild(ta);
+  ta.select();
+  var ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+</script>
+</body>
+</html>

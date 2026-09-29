@@ -200,6 +200,7 @@ help_rows = [
     ("index.html is the short version, for friends. family.html is the long one, for relatives.", ""),
     ("It adds the formal invitation, what each ritual means, who to call, and parking and baraat.", ""),
     ("It reads the Family Details, Rituals and Family Contacts sheets, plus the Family Detail column.", ""),
+    ("Set Rituals Section on Family Details to No to leave the ritual explanations off a card.", ""),
     ("A ritual stays hidden until its Verified? is Yes, so an unconfirmed line is never shown.", ""),
     ("Leave a field blank and that block simply does not appear on the page.", ""),
 ]

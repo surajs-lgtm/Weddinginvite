@@ -57,7 +57,9 @@ main venue, and it renders as a small tag on that row.
 
 **Family Details sheet** — only for `docs/family.html`. The long formal
 wording, a message to relatives, the baraat route, parking, accommodation, and
-two named contacts. **Rituals sheet** — what each of the twelve functions is
+two named contacts. **Rituals Section** is a `Yes`/`No` switch for the
+"What each function is" block: the groom's page leaves it off, the bride's
+carries her own. **Rituals sheet** — what each of the twelve functions is
 and why it happens, in the words you would use explaining it to family. Each
 row has its own **Verified?**: a row stays hidden until that is `Yes`, so an
 explanation you have not checked never reaches a relative. **Family Contacts
@@ -140,7 +142,9 @@ schedule, the venue, RSVP.
   parents, the couple, the request, the dates
 - **The Rituals**, a card per function explaining what it is and why it
   happens. This is the real addition: a relative from another region, or your
-  spouse's colleague, would otherwise just see twelve unfamiliar names
+  spouse's colleague, would otherwise just see twelve unfamiliar names. It is
+  optional per card — the groom's page leaves it off, the bride's carries her
+  own — and the `Rituals Section` field on Family Details decides
 - **Eagerly Awaiting Your Presence**, the named relatives from the Family
   Members sheet, grouped into the groom's side and the bride's side
 - **Who To Call**, from the Family Contacts sheet

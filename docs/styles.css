@@ -301,6 +301,12 @@ body::after {
 .js .card__go { display: block; }
 .card__go:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 .card__go:active { transform: translateY(1px); }
+/* The family page drops the date from the card, and the date was what held the
+   control at the foot of the card with its `margin: auto 0 0`. Without a
+   replacement the button rides up under the invitation and the card reads
+   top-heavy, so the control takes the anchor over. Keyed on the date's absence
+   rather than a page class, so putting the date back restores the old layout. */
+.card__base:not(:has(.card__when)) .card__go { margin-top: auto; }
 
 /* --- cover: pastel, to match the page ----------------------------------- */
 .card__leaf {

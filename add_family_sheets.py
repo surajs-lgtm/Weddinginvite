@@ -196,6 +196,12 @@ FAMILY_ROWS = [
     ("Family Contact 2 Phone", FILLIN, "With country code"),
     ("Family Contact 2 Role", FILLIN, ""),
     ("Gift / Shagun Note", FILLIN, "Optional. Left blank, nothing appears."),
+    # The rituals section is optional per card. The groom's page leaves it off
+    # and the bride's carries her own, so the workbook decides rather than the
+    # markup: an explicit No hides it, anything else shows it. Blank means show,
+    # so a workbook saved before this field existed keeps its rituals.
+    ("Rituals Section", "No",
+     "Yes | No - show the 'What each function is' section on the family page"),
     ("Awaiting Section Title", "Eagerly Awaiting Your Presence",
      "Heading above the list of family members. Leave blank to use the default."),
     ("Awaiting Section Note", FILLIN, "One line under the heading, e.g. 'From both our families'. Optional."),
@@ -389,11 +395,14 @@ def write_family_sheets(wb, help_sheet=True):
 
     if help_sheet and "How To Use" in wb.sheetnames:
         how = wb["How To Use"]
-        how.append(["", ""])
-        how.append(("6. THE FAMILY PAGE", ""))
-        how.append(("docs/family.html is a longer version for relatives: what each ritual means, who to call, parking and baraat.", ""))
-        how.append(("It reads the Family Details, Rituals and Family Contacts sheets, plus the Family Detail column.", ""))
-        how.append(("Rituals stay hidden until Verified? is Yes, so an unconfirmed line is never shown.", ""))
+        existing = {str(c.value).strip() for row in how.iter_rows() for c in row if c.value}
+        if "6. THE FAMILY PAGE" not in existing:
+            how.append(["", ""])
+            how.append(("6. THE FAMILY PAGE", ""))
+            how.append(("docs/family.html is a longer version for relatives: what each ritual means, who to call, parking and baraat.", ""))
+            how.append(("It reads the Family Details, Rituals and Family Contacts sheets, plus the Family Detail column.", ""))
+            how.append(("Set Rituals Section on Family Details to No to leave the ritual explanations off a card.", ""))
+            how.append(("Rituals stay hidden until Verified? is Yes, so an unconfirmed line is never shown.", ""))
 
     return wb
 

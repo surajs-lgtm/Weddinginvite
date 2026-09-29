@@ -142,6 +142,15 @@
     var list = $("ritualList");
     if (!sec || !list) return;
 
+    /* The section is optional per card: the groom's family page leaves it off
+       and the bride's carries her own. The workbook decides, so an explicit No
+       hides it and anything else -- including a workbook saved before this
+       field existed -- shows it. */
+    if (String(F["Rituals Section"] || "").trim().toLowerCase().charAt(0) === "n") {
+      sec.hidden = true;
+      return;
+    }
+
     var shown = 0;
 
     events.forEach(function (ev) {

@@ -770,10 +770,15 @@
   put("introDate", introWhen);
 
   /* Drop a line rather than print an empty one. A wedding card with a blank
-     ruled space looks like a bug; a shorter card looks intentional. */
+     ruled space looks like a bug; a shorter card looks intentional. The "&" is
+     the no-script placeholder the span ships with, so a span still holding it
+     counts as empty -- otherwise a side with no parents named keeps its
+     heading and prints a bare ampersand under it. */
   ["introParentsGroom", "introParentsBride"].forEach(function (id) {
     var el = document.getElementById(id);
-    if (el && !el.textContent.trim() && el.parentNode) el.parentNode.remove();
+    if (!el || !el.parentNode) return;
+    var shown = el.textContent.trim();
+    if (shown === "" || shown === "&") el.parentNode.remove();
   });
   if (!intro.querySelector(".card__parent")) {
     var parents = intro.querySelector(".card__parents");

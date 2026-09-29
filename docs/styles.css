@@ -1376,7 +1376,10 @@ body::after {
   text-align: center;
   margin: -.4rem 0 1.4rem;
 }
-.awaiting { display: flex; flex-direction: column; gap: 1.6rem; align-items: center; }
+/* The 38px top margin matches the Rituals list above, so the gap under a
+   section title reads the same going down the page. Without it the names butted
+   straight up against "Eagerly Awaiting Your Presence". */
+.awaiting { display: flex; flex-direction: column; gap: 1.6rem; align-items: center; margin: 38px auto 0; }
 .awaiting__group { text-align: center; }
 .awaiting__side {
   font-family: var(--body);

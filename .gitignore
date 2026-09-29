@@ -45,9 +45,16 @@ bride-details.xlsx
 docs/hindi-demo-*.html
 docs/data-hindi.js
 
-# Test builds of the bride's version, made with a throwaway workbook to check
-# the ordering. Same reason: they carry real names from the main workbook, and
-# they are not the finished card.
-docs/data-bride.js
-docs/index-bride.html
-docs/family-bride.html
+# The bride's version of the card is NOT ignored. It is a real, finished card
+# that her family has to be able to open at a link, and it is built from
+# bride-details.xlsx by build_site.py. Once it is tracked here, rebuilding
+# regenerates the same three files and the diff shows what changed on her card.
+#
+# Two things follow from that, and both are the point of generating it from the
+# workbook rather than hand-editing the pages:
+#
+#   - data-bride.js is public from the moment it is committed, so it may only
+#     ever hold the bride's own text. Her workbook blanks the groom's relatives
+#     and the ritual explanations, so the file starts with none of it in it.
+#   - bride-details.xlsx itself stays ignored (see above). The spreadsheet holds
+#     the RSVP list and real phone numbers; the built data file does not.

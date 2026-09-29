@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>We're Getting Married</title>
+<meta name="description" id="metaDesc" content="Wedding invitation and schedule for family.">
+<meta property="og:title" id="ogTitle" content="We're Getting Married">
+<meta property="og:description" id="ogDesc" content="Wedding invitation and schedule for family.">
+<meta name="theme-color" content="#fdfbf6">
+<!-- Marks the document as script-capable before the stylesheet loads. The
+     scroll-reveal hiding rule is scoped to .js, so this one attribute decides
+     whether anything is ever hidden. It also runs first so the flag is set
+     before first paint, which is what prevents a flash of visible content
+     collapsing away. -->
+<script>document.documentElement.className += " js";</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=2e565321">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+  <!-- ============ card-opening intro ============
+       A physical-style Indian wedding card in two beats. The cover carries the
+       gold framing, the gavaksha arch and "Shubh Vivah"; the inner face
+       carries the printed invitation and a Continue control. The cover is a
+       full-size panel hinged on the left edge, so it swings open like a card
+       rather than sliding, and nothing of the inner face shows while closed.
+
+       Two taps, in this order, and never a dead end:
+         1. "Open the wedding invitation" lifts the cover.
+          2. "Open Invitation" then reveals the site.
+       Between them the inner face is given time to settle, because arriving
+       all at once reads as a glitch. A guest who never taps either is carried
+       through by the CSS timings, so the site still appears on its own.
+
+       The card is a <div> with two sibling buttons rather than one <button>
+       wrapping the lot, because a button inside a button is invalid and the
+       inner face needs its own control.
+
+       Audio: browsers block sound that does not begin inside a real user
+       gesture, so the flute starts on the first tap and never otherwise. -->
+  <div class="intro" id="intro">
+    <div class="intro__glow" aria-hidden="true"></div>
+
+    <div class="card" id="introCard">
+      <!-- inner face -->
+      <div class="card__base">
+        <span class="card__blessing" id="introBlessing">With the blessings of our families</span>
+
+        <span class="card__parents">
+          <span class="card__parent">
+            <span class="card__role">Groom&rsquo;s Parents</span>
+            <span class="card__pname" id="introParentsGroom">&amp;</span>
+          </span>
+          <span class="card__parent">
+            <span class="card__role">Bride&rsquo;s Parents</span>
+            <span class="card__pname" id="introParentsBride">&amp;</span>
+          </span>
+        </span>
+
+        <span class="card__names">
+          <span class="card__gname" id="introGroom">&amp;</span>
+          <span class="card__amp" id="introAmp" aria-hidden="true">&amp;</span>
+          <span class="card__bname" id="introBride">&amp;</span>
+        </span>
+
+        <span class="card__invite" id="introInvite">request the honour of your presence</span>
+        <!-- No date line here, unlike the friends page: this page carries the
+             full four-day schedule below, so the card does not repeat it. The
+             control takes over the bottom anchor the date held; see the
+             .card__base:not(:has(.card__when)) rule in styles.css. -->
+
+        <button class="card__go" id="introGo" type="button" tabindex="-1">
+          Open Invitation
+        </button>
+
+        <span class="card__corner card__corner--tl" aria-hidden="true"></span>
+        <span class="card__corner card__corner--tr" aria-hidden="true"></span>
+        <span class="card__corner card__corner--bl" aria-hidden="true"></span>
+        <span class="card__corner card__corner--br" aria-hidden="true"></span>
+      </div>
+
+      <!-- cover -->
+      <div class="card__leaf" aria-hidden="true">
+        <span class="card__crown">
+          <svg class="card__arch" viewBox="0 0 220 300" focusable="false">
+            <path class="card__draw card__draw--outer" pathLength="100"
+                  d="M18 286V142C18 100 44 78 66 92C80 101 86 74 100 62C106 57 110 52 110 44C110 52 114 57 120 62C134 74 140 101 154 92C176 78 202 100 202 142V286"/>
+            <path class="card__draw card__draw--inner" pathLength="100"
+                  d="M34 286V148C34 114 58 98 80 106C92 110 102 94 110 86C118 94 128 110 140 106C162 98 186 114 186 148V286"/>
+            <circle class="card__draw card__draw--finial" pathLength="100" cx="110" cy="30" r="4.5"/>
+            <path class="card__draw card__draw--base" pathLength="100" d="M8 286H212"/>
+          </svg>
+          <!-- Ganesha, seated inside the arch on the cover. Drawn to the same
+               weight and gold as the arch so it reads as part of one print
+               rather than a sticker dropped on top. One tusk, by tradition. -->
+          <span class="card__deity" aria-hidden="true">
+            <svg class="card__ganesh" viewBox="22 10 156 190" focusable="false">
+              <path d="M74 54C82 30 118 30 126 54"/>
+              <path d="M100 16l7 15H93z"/>
+              <path d="M82 44c4 5 9 7 18 7s14-2 18-7"/>
+              <path d="M72 72C50 56 30 68 33 94c2 22 17 33 38 29"/>
+              <path d="M128 72c22-16 42-4 39 22-2 22-17 33-38 29"/>
+              <circle cx="100" cy="88" r="30"/>
+              <path d="M80 74c6-4 13-4 18 0"/>
+              <path d="M102 74c5-4 12-4 18 0"/>
+              <path d="M84 86c3-5 10-5 13 0"/>
+              <path d="M103 86c3-5 10-5 13 0"/>
+              <path d="M120 98c7 5 9 14 4 21"/>
+              <path d="M100 94v40c0 14-9 22-20 22-9 0-15-6-15-14"/>
+              <path d="M100 118c-19 0-33 15-33 34s14 33 33 33 33-14 33-33-14-34-33-34z"/>
+              <path d="M70 142c-11 6-17 16-17 27"/>
+              <path d="M130 142c11 6 17 16 17 27"/>
+              <circle cx="147" cy="176" r="7"/>
+              <path d="M58 192c0-12 10-18 18-12 4-10 16-10 20 0 8-6 18 0 18 12"/>
+              <path d="M62 192h76"/>
+            </svg>
+          </span>
+        </span>
+        <span class="card__deva">शुभ विवाह</span>
+        <span class="card__latin">Shubh Vivah</span>
+        <span class="card__rule" aria-hidden="true"></span>
+        <span class="card__diya" aria-hidden="true">
+          <svg viewBox="0 0 80 62" focusable="false">
+            <path class="card__flame" d="M40 6C46 15 51 21 51 28a11 11 0 0 1-22 0C29 21 34 15 40 6Z"/>
+            <path class="card__bowl" d="M10 34h60c0 12-13 20-30 20s-30-8-30-20Z"/>
+            <path class="card__rim" d="M6 34h68"/>
+          </svg>
+        </span>
+        <span class="card__corner card__corner--tl"></span>
+        <span class="card__corner card__corner--tr"></span>
+        <span class="card__corner card__corner--bl"></span>
+        <span class="card__corner card__corner--br"></span>
+      </div>
+
+      <!-- the tap target for beat one; covers the closed card -->
+      <button class="card__open" id="introOpen" type="button"
+              aria-label="Open the wedding invitation"></button>
+
+      <span class="card__seal" aria-hidden="true">Open</span>
+    </div>
+
+    <p class="card__hint" id="introHint" aria-hidden="true">Tap the card to open</p>
+  </div>
+
+<!-- ============ toran ============
+     In normal flow, ahead of the topbar, so it can never overlap anything. The
+     stylesheet also scales it down on narrow screens. -->
+<div class="deco deco--toran" aria-hidden="true"></div>
+
+<!-- ============ pastel wash behind everything ============ -->
+<div class="bg" aria-hidden="true">
+  <div class="bg__wash bg__wash--blush"></div>
+  <div class="bg__wash bg__wash--sage"></div>
+  <div class="bg__wash bg__wash--butter"></div>
+</div>
+
+<header class="topbar">
+  <span id="topHashtag" class="topbar__tag"></span>
+  <a class="btn btn--soft btn--sm" href="#rsvp">Kindly respond</a>
+</header>
+
+<!-- ============ hero ============ -->
+<section class="hero" id="hero">
+  <div class="hero__card">
+    <span class="deco deco--portrait" aria-hidden="true"></span>
+    <span class="deco deco--corner deco--corner--tl" aria-hidden="true"></span>
+    <span class="deco deco--corner deco--corner--tr" aria-hidden="true"></span>
+    <span class="deco deco--corner deco--corner--bl" aria-hidden="true"></span>
+    <span class="deco deco--corner deco--corner--br" aria-hidden="true"></span>
+
+    <img class="hero__kalash" src="assets/kalash.svg" alt="" aria-hidden="true">
+
+    <p class="hero__blessing" id="heroBlessing">With the blessings of our families</p>
+
+    <h1 class="hero__names">
+      <span class="hero__name" id="heroGroom">Groom</span>
+      <span class="hero__amp" id="heroAmp" aria-hidden="true">&amp;</span>
+      <span class="hero__name" id="heroBride">Bride</span>
+    </h1>
+
+    <!-- The date used to sit here, between the names and the closing request.
+         Removed: the couple asked for no date on the card. The schedule below
+         still carries every date, and app.js leaves #heroDate alone when the
+         element is absent, so the two templates can drop it independently. -->
+
+    <!-- The closing request, last on the card. It used to sit directly under the
+         names, where it read as a caption to them rather than as the couple's
+         ask. At the foot, after the names have already said who this is, it
+         lands as the reason for the whole card. -->
+    <p class="hero__line" id="heroLine">Together with their families</p>
+
+    <!-- The venue used to sit here as a line under the date. Removed from the
+         card deliberately: the picture band directly below was being read as
+         the venue's, so the name competed with it. The full address, map and
+         directions still live in the Venue section. -->
+  </div>
+
+  <!-- Moved out of .hero__card. The couple portrait is absolutely positioned
+       against the card's bottom edge, so a button row as the card's last child
+       sat directly on the picture — worst on a phone, where the type is large
+       relative to the viewport. The row now sits below the card entirely.
+       Consequence worth knowing: the card no longer contains the row, so it is
+       shorter than before and the 58% band is a slightly smaller strip. The
+       band's own geometry (inset, height) is unchanged. -->
+  <div class="hero__cta">
+    <a class="btn btn--solid" href="#schedule">View Schedule</a>
+    <a class="btn btn--soft" href="#venue">Venue &amp; Map</a>
+    <a class="btn btn--soft" href="#rsvp">RSVP</a>
+  </div>
+</section>
+
+<!-- ============ countdown ============ -->
+<section class="countdown" id="countdown" aria-label="Countdown to the wedding">
+  <p class="section__eyebrow" id="countdownLabel">Counting down to</p>
+  <div class="countdown__grid" id="countdownGrid">
+    <div class="count"><span class="count__num" id="cDays">--</span><span class="count__lbl">Days</span></div>
+    <div class="count"><span class="count__num" id="cHours">--</span><span class="count__lbl">Hours</span></div>
+    <div class="count"><span class="count__num" id="cMins">--</span><span class="count__lbl">Minutes</span></div>
+    <div class="count"><span class="count__num" id="cSecs">--</span><span class="count__lbl">Seconds</span></div>
+  </div>
+  <p class="countdown__done" id="countdownDone" hidden>The celebrations are underway. Joy to you both!</p>
+</section>
+
+<!-- ============ invitation line ============ -->
+<div class="banner">
+  <span class="banner__rule" aria-hidden="true"></span>
+  <p class="banner__text">We invite you to celebrate with us</p>
+  <span class="banner__rule" aria-hidden="true"></span>
+</div>
+
+<!-- ============ families ============ -->
+<div class="deco deco--divider" aria-hidden="true"></div>
+<section class="families" id="families" aria-label="Families">
+  <div class="family" data-side="groom">
+    <h3 class="family__side">Groom's Family</h3>
+    <p class="family__names" id="groomParents">
+      <span class="family__line" data-role="father">
+        <span class="family__role">Father</span>
+        <span class="family__name" id="groomFather"></span>
+      </span>
+      <span class="family__line" data-role="mother">
+        <span class="family__role">Mother</span>
+        <span class="family__name" id="groomMother"></span>
+      </span>
+    </p>
+  </div>
+  <div class="family__divider" aria-hidden="true"></div>
+  <div class="family" data-side="bride">
+    <h3 class="family__side">Bride's Family</h3>
+    <p class="family__names" id="brideParents">
+      <span class="family__line" data-role="father">
+        <span class="family__role">Father</span>
+        <span class="family__name" id="brideFather"></span>
+      </span>
+      <span class="family__line" data-role="mother">
+        <span class="family__role">Mother</span>
+        <span class="family__name" id="brideMother"></span>
+      </span>
+    </p>
+  </div>
+</section>
+
+<!-- ============ formal invitation (family page only) ============
+     The friends page goes straight from the names to the schedule. Relatives
+     expect the long formal wording first, so this restates the invitation in
+     the order a printed card uses it: the blessing, the couple, the ask, and
+     the date.
+
+     The parents are not repeated here. The families block immediately above
+     already names both sets under a FATHER / MOTHER label, and a printed card
+     names them once; printing them a second time a few lines down read as an
+     oversight rather than a courtesy.
+
+     Every block here hides itself when the matching Family Details field is
+     blank, so an unfinished workbook never leaves an empty heading. -->
+<section class="section section--tint" id="formalInvite">
+  <span class="deco deco--mandala" aria-hidden="true"></span>
+  <p class="section__eyebrow">The invitation</p>
+  <h2 class="section__title">You Are Invited</h2>
+  <div class="formal">
+    <p class="formal__line" id="formalBlessing"></p>
+    <p class="formal__names" id="formalNames"></p>
+    <p class="formal__ask" id="formalAsk"></p>
+    <p class="formal__dates" id="formalDates"></p>
+  </div>
+  <p class="formal__note" id="familyNoteBlock" hidden></p>
+</section>
+
+<!-- ============ eagerly awaiting your presence (family page only) ============
+     Relatives are named on a printed card so a guest can see who is hosting
+     them. The list is driven entirely by the "Family Members" sheet: add a row,
+     set Verified? to Yes, and the name appears. The heading hides until at
+     least one name is ready, so a half-filled sheet never shows a bare title.
+
+     Grouped by Side rather than printed as one column, so the two families
+     read as two lists. An unrecognised Side still prints, under no heading,
+     instead of being dropped — a name typed in should never vanish. -->
+<section class="section" id="awaiting" hidden>
+  <p class="section__eyebrow">With folded hands</p>
+  <h2 class="section__title" id="awaitingTitle">Eagerly Awaiting Your Presence</h2>
+  <p class="awaiting__note" id="awaitingNote" hidden></p>
+  <div class="awaiting" id="awaitingList"></div>
+</section>
+
+<!-- ============ rituals explained (family page only) ============
+     The single biggest thing this page adds. The friends page lists twelve
+     function names and assumes the reader knows what they are; a relative from
+     another region, or a spouse's colleague, does not. One card per function,
+     in schedule order, each with its icon.
+
+     Rendered by family.js from the Rituals sheet, and only for rows whose
+     Verified? is Yes, so an unconfirmed line is never shown. -->
+<section class="section" id="rituals">
+  <p class="section__eyebrow">What each function is</p>
+  <h2 class="section__title">The Rituals</h2>
+  <p class="section__sub">Twelve functions over four days. Here is what each one is,
+    and why it happens.</p>
+  <div class="rituals" id="ritualList"></div>
+</section>
+
+<!-- ============ family contacts ============
+     Who to call, which is the question every relative actually has. Built from
+     the Family Contacts sheet, plus the two named contacts on Family Details.
+     Hidden entirely when nothing is filled in. -->
+<section class="section section--tint" id="contactsSec" hidden>
+  <p class="section__eyebrow">If you need us</p>
+  <h2 class="section__title">Who To Call</h2>
+  <div class="contacts" id="contactList"></div>
+</section>
+
+<!-- ============ logistics ============
+     Baraat route, parking, accommodation and the gift note. Four independent
+     blocks, each hidden unless filled in, so the section collapses on its own
+     when there is nothing to say. -->
+<section class="section" id="logistics" hidden>
+  <p class="section__eyebrow">On the day</p>
+  <h2 class="section__title">Practical Details</h2>
+  <div class="logistics" id="logisticsList"></div>
+</section>
+
+<!-- ============ schedule ============ -->
+<section class="section" id="schedule">
+  <p class="section__eyebrow">Celebrations</p>
+  <h2 class="section__title">Wedding Schedule</h2>
+  <p class="section__sub" id="scheduleSub"></p>
+
+  <div class="tabs" id="dayTabs" role="tablist" aria-label="Wedding days"></div>
+  <div id="dayPanels"></div>
+</section>
+
+<!-- ============ baraat feature ============ -->
+<aside class="feature" id="feature" hidden>
+  <span class="deco deco--mandap" aria-hidden="true"></span>
+  <span class="feature__rule" aria-hidden="true"></span>
+  <div class="feature__body">
+    <p class="section__eyebrow">The main event</p>
+    <h2 class="feature__title" id="featureName">Baraat Prasthan</h2>
+    <p class="feature__when" id="featureDate"></p>
+  </div>
+  <span class="feature__rule" aria-hidden="true"></span>
+</aside>
+
+<!-- ============ venue ============ -->
+<section class="section section--tint" id="venue">
+  <span class="deco deco--jali" aria-hidden="true"></span>
+  <p class="section__eyebrow">Where</p>
+  <h2 class="section__title">Venue &amp; Directions</h2>
+  <div class="venue-grid" id="venueGrid"></div>
+</section>
+
+<!-- ============ rituals ============ -->
+  <!-- Replaces the old "The Rituals We Honour" grid. That section promised to
+       explain what each function means but rendered only a name and a date, and
+       repeated the Schedule's twelve events. This panel is built from the one
+       thing the page had no home for: a single ashirwad line.
+
+       Deliberately not the hero's "With the blessings of our families" and not
+       the parents' names, which #families already carries. Repeating either
+       here would reintroduce exactly the duplication this replaced. -->
+  <section class="section section--blessings" id="blessings" hidden>
+    <span class="deco deco--mandala" aria-hidden="true"></span>
+    <p class="section__eyebrow">Ashirwad</p>
+    <h2 class="section__title">Blessings for the Journey Ahead</h2>
+    <p class="blessings__text" id="ashirwadText"></p>
+  </section>
+
+
+<!-- ============ RSVP ============ -->
+<section class="section section--tint" id="rsvp">
+  <p class="section__eyebrow">Kindly respond</p>
+  <h2 class="section__title">RSVP</h2>
+  <p class="section__sub" id="rsvpDeadline"></p>
+
+  <form class="rsvp-form" id="rsvpForm" novalidate>
+    <div class="field">
+      <label for="rName">Your name</label>
+      <input id="rName" name="name" type="text" autocomplete="name" required>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="rGuests">Number of guests</label>
+        <input id="rGuests" name="guests" type="number" min="1" max="20" value="1" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label for="rRelation">Relation</label>
+        <input id="rRelation" name="relation" type="text" placeholder="e.g. Uncle">
+      </div>
+    </div>
+    <div class="field">
+      <label for="rPhone">Phone / WhatsApp</label>
+      <input id="rPhone" name="phone" type="tel" autocomplete="tel" placeholder="+91 98765 43210">
+    </div>
+    <fieldset class="field">
+      <legend>Will you attend?</legend>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="status" value="Attending" checked><span>Joyfully accepts</span></label>
+        <label class="choice"><input type="radio" name="status" value="Pending"><span>Not sure yet</span></label>
+        <label class="choice"><input type="radio" name="status" value="Declined"><span>Regretfully declines</span></label>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="rMeal">Meal preference</label>
+      <select id="rMeal" name="meal">
+        <option value="">No preference</option>
+        <option>Vegetarian</option>
+        <option>Jain</option>
+        <option>Non-vegetarian</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="rNote">Message for the couple</label>
+      <textarea id="rNote" name="note" rows="3" placeholder="Blessings, songs requests, anything else..."></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn--solid" type="submit">Send RSVP</button>
+      <a class="btn btn--whatsapp" id="whatsappBtn" href="#" hidden>Send on WhatsApp</a>
+    </div>
+    <p class="form-status" id="formStatus" role="status"></p>
+  </form>
+
+  <details class="saved" id="savedBox" hidden>
+    <summary>Your saved RSVPs on this device (<span id="savedCount">0</span>)</summary>
+    <div id="savedList"></div>
+    <button class="btn btn--soft btn--sm" id="clearSaved" type="button">Clear all</button>
+  </details>
+</section>
+
+<!-- ============ verse ============ -->
+<section class="section section--verse" id="verse" hidden>
+  <span class="deco deco--arch" aria-hidden="true"></span>
+  <p class="verse__text" id="verseText"></p>
+</section>
+
+<!-- ============ footer ============ -->
+<div class="deco deco--diyas" aria-hidden="true"></div>
+<footer class="footer">
+  <span class="deco deco--peacock deco--peacock--l" aria-hidden="true"></span>
+  <span class="deco deco--peacock deco--peacock--r" aria-hidden="true"></span>
+  <p class="footer__hashtag" id="footHashtag"></p>
+  <p class="footer__note" id="footContact"></p>
+  <p class="footer__tiny">With love &amp; blessings</p>
+</footer>
+
+<!-- ============ floating actions ============ -->
+<div class="actions" id="actions">
+  <button class="act" id="addCalendar" type="button" title="Add to calendar">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    <span>Calendar</span>
+  </button>
+  <button class="act" id="shareBtn" type="button" title="Share invitation">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+    <span>Share</span>
+  </button>
+  <a class="act" id="mapFloat" href="#" target="_blank" rel="noopener" title="Open in Maps" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+    <span>Map</span>
+  </a>
+    <a class="act" id="waFloat" href="#" target="_blank" rel="noopener" title="WhatsApp" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 0 1-11.9 7L4 20l1.1-4A8 8 0 1 1 20 12z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5"/></svg>
+      <span>WhatsApp</span>
+    </a>
+    <button class="act" id="soundBtn" type="button" title="Mute music" aria-pressed="false" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="act__wave" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+      <span>Sound</span>
+    </button>
+  </div>
+
+  <!-- Flute. There is no autoplay path: browsers block sound that does not
+       begin inside a real user gesture, and the only gesture here is opening
+       the card. A missing file is not an error — the player stays hidden and
+       the card opens exactly as it would with music. -->
+  <audio id="flute" src="assets/audio/flute.mp3" preload="auto"></audio>
+
+
+<script src="data-bride.js?v=a829bc08"></script>
+<script src="app.js?v=4511ecf0"></script>
+<!-- family.js last, and only on this page. It reads the same window.WEDDING_DATA
+     and adds the sections above; app.js is shared unchanged with index.html, so
+     nothing on the friends page depends on this file. -->
+<script src="family.js?v=8be381f2" defer></script>
+</body>
+</html>

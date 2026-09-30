@@ -161,16 +161,18 @@
   setText("footHashtag", D["Hashtag"]);
   setText("footContact", [D["Contact Name"], D["Contact Phone"]].filter(Boolean).join(" · "));
 
-  /* The families block lists father and mother on their own labelled lines
-     rather than one joined string, so a reader can tell the two apart. A line
-     with no name is removed, and a whole side is removed when both its lines
-     go, so a half-filled block still reads as deliberate rather than broken. */
+  /* The families block lists mother and father on their own labelled lines
+     rather than one joined string, so a reader can tell the two apart. The
+     markup already puts the mother first, as the couple asked, and this loop
+     fills the lines by id without touching their order. A line with no name is
+     removed, and a whole side is removed when both its lines go, so a
+     half-filled block still reads as deliberate rather than broken. */
   var anyParent = false;
   ["groom", "bride"].forEach(function (side) {
     var sideName = side === "groom" ? "Groom" : "Bride";
     var block = $(side + "Parents");
     if (!block) return;
-    ["Father", "Mother"].forEach(function (role) {
+    ["Mother", "Father"].forEach(function (role) {
       var nameEl = $(side + role);
       var line = nameEl && nameEl.parentNode;
       if (nameEl) nameEl.textContent = D[sideName + "'s " + role] || "";

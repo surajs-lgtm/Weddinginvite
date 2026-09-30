@@ -137,16 +137,18 @@ def read_details(wb):
 def parents_view(details):
     """Add the four parent fields plus a joined 'Groom's Parents' display value.
 
-    Two jobs, both in one place because getting them out of step is how a
+    Three jobs, all in one place because getting them out of step is how a
     father's name ends up printed as a mother's:
 
     1. Normalise a workbook that still has the old single "Groom's Parents"
        field. That value is a father's -- it was typed into a field with no
        gender -- so it fills Father and Mother is left empty.
-    2. Join Father and Mother into the old display key so app.js and family.js
-       keep reading one field. A blank mother drops the ampersand instead of
-       printing "Randhir & "; a side with neither stays empty so the card still
-       removes the whole line.
+    2. Join Mother and Father into the old display key so app.js and family.js
+       keep reading one field. The mother leads, as the couple asked: every
+       card and every card-derived string reads mother first, then father.
+    3. A blank parent drops out of the join instead of leaving a dangling
+       "&", and a side with neither stays empty so the card still removes the
+       whole line.
     """
     out = dict(details)
     for side in ("Groom", "Bride"):
@@ -155,9 +157,10 @@ def parents_view(details):
         mother = out.get("%s's Mother" % side, "")
         if not father and not mother and old:
             father, mother = old, ""
-        names = [n for n in (father, mother) if n]
         out["%s's Father" % side] = father
         out["%s's Mother" % side] = mother
+        # Mother first, so "Smt. Pushpa Singh & Shri Randhir Prasad Singh".
+        names = [n for n in (mother, father) if n]
         # "&" between them, "and" for a married couple reads oddly
         out["%s's Parents" % side] = " & ".join(names) if names else ""
     return out

@@ -151,7 +151,7 @@ def norm_audience(value):
 
 
 # ------------------------------------------------------------------ read
-def read_details(wb):
+def read_details(wb, lead="mother"):
     """Sheet 1: Field / Value pairs."""
     ws = wb["Wedding Details"]
     details = {}
@@ -163,22 +163,22 @@ def read_details(wb):
             details[key] = ""
         else:
             details[key] = str(value).strip()
-    return parents_view(details)
+    return parents_view(details, lead)
 
 
-# Which parent leads inside each set. Deliberately not the same on both sides,
-# because this is the printed-card convention: the groom's card leads with the
-# mother, the bride's with the father. Earlier this led with the father on both
-# sides, which was a change of mind, not a correction of a fault.
+# Which parent leads inside each set. The order is a property of the card, not
+# of the family: every pair leads with the mother on the groom's site and with
+# the father on the bride's. So this is keyed on the data file being built, not
+# on the side -- data.js is the groom's card, data-bride.js the bride's.
 #
 # This has to agree with the order of the family__line blocks in index.html and
 # family/index.html, because those are what the family page renders and this is
 # what the card renders. The bride's pages are generated from the same two
-# sources, so both blocks and the joined string change together.
-PARENT_LEAD = {"Groom": "mother", "Bride": "father"}
+# sources and have their columns reversed, so all three move together.
+CARD_LEAD = {"data.js": "mother", "data-bride.js": "father"}
 
 
-def parents_view(details):
+def parents_view(details, lead="mother"):
     """Add the four parent fields plus a joined 'Groom's Parents' display value.
 
     Three jobs, all in one place because getting them out of step is how a
@@ -188,9 +188,10 @@ def parents_view(details):
        field. That value is a father's -- it was typed into a field with no
        gender -- so it fills Father and Mother is left empty.
     2. Join both parents into the old display key so app.js and family.js keep
-       reading one field. The lead differs per side, see PARENT_LEAD: the
-       groom's card reads "Smt. Pushpa Singh & Shri Randhir Prasad Singh" and
-       the bride's reads "Shri Samsher Bahadur Singh & Smt. Shubhawati Devi".
+       reading one field. One lead for every pair, set by which card is being
+       built: the groom's card reads "Smt. Pushpa Singh & Shri Randhir Prasad
+       Singh" and the bride's reads "Shri Randhir Prasad Singh & Smt. Pushpa
+       Singh".
     3. A blank parent drops out of the join instead of leaving a dangling
        "&", and a side with neither stays empty so the card still removes the
        whole line.
@@ -204,7 +205,7 @@ def parents_view(details):
             father, mother = old, ""
         out["%s's Father" % side] = father
         out["%s's Mother" % side] = mother
-        pair = (father, mother) if PARENT_LEAD[side] == "father" else (mother, father)
+        pair = (father, mother) if lead == "father" else (mother, father)
         names = [n for n in pair if n]
         # "&" between them, "and" for a married couple reads oddly
         out["%s's Parents" % side] = " & ".join(names) if names else ""
@@ -540,6 +541,41 @@ def card_order(details):
     }
 
 
+# One family__line span in full, nested spans included. The lookahead is what
+# makes .*? reach the closing tag of the outer span: every inner one is followed
+# by more markup, never by the next line or the end of the block. \Z rather than
+# </p>, because the block is captured without its closing tag.
+FAMILY_LINE = r'<span class="family__line" data-role="\w+">.*?</span>\s*(?=<span class="family__line"|\Z)'
+
+
+def flip_families_columns(html, sides=("groom", "bride")):
+    """Swap the mother and father lines in each families column.
+
+    The groom's pages are the source and lead with the mother; the bride's are
+    generated from them and lead with the father. Returns the page unchanged if
+    a column is missing or does not hold exactly two lines, so an unexpected
+    shape is left readable rather than half-rewritten.
+    """
+    for side in sides:
+        m = re.search(
+            r'(<p class="family__names" id="%sParents">)(.*?)(</p>)' % side,
+            html, re.S,
+        )
+        if not m:
+            continue
+        body = m.group(2)
+        lines = list(re.finditer(FAMILY_LINE, body, re.S))
+        if len(lines) != 2:
+            print(f"  warning: {side} column has {len(lines)} parent line(s), "
+                  "expected 2; left in the source order")
+            continue
+        a, b = lines
+        swapped = (body[:a.start()] + b.group(0) + body[a.end():b.start()]
+                   + a.group(0) + body[b.end():])
+        html = html[:m.start(2)] + swapped + html[m.end(2):]
+    return html
+
+
 def write_variant_pages(folder, data_file):
     """Copy index.html and family.html with their data tag repointed.
 
@@ -554,6 +590,12 @@ def write_variant_pages(folder, data_file):
     /bride/family/ are the four addresses worth handing out. A page a directory
     deep cannot reach ../styles.css, so the sources reference every asset from
     the root and the copy keeps those absolute paths untouched.
+
+    The columns are reversed on the way through. The lead is a property of the
+    card rather than of the family -- mother first on the groom's site, father
+    first on the bride's -- so both the joined parent string (CARD_LEAD, in
+    parents_view) and the family__line order have to flip together. Reversing
+    only the string would leave the two disagreeing inside one page.
 
     The stamp loop below then rewrites the ?v= on the new data file in these
     copies exactly as it does for the originals, so the cache busting is not
@@ -580,6 +622,7 @@ def write_variant_pages(folder, data_file):
             print(f"  warning: no data.js tag found in {src_name}; "
                   "left it alone rather than guessing")
             continue
+        html = flip_families_columns(html)
         out = os.path.join(folder, out_name)
         os.makedirs(os.path.dirname(out), exist_ok=True)
         with open(out, "w", encoding="utf-8") as fh:
@@ -597,7 +640,7 @@ def build(book=None, out=None):
         sys.exit(f"Missing {book}\nRun:  python3 make_workbook.py  (once), then edit it.")
     wb = load_workbook(book, data_only=True)
 
-    details = read_details(wb)
+    details = read_details(wb, CARD_LEAD.get(os.path.basename(out), "mother"))
     venues = read_venues(wb)
     rsvps = read_rsvps(wb)
 

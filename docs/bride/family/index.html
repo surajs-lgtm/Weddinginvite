@@ -238,15 +238,15 @@
   <div class="family" data-side="groom">
     <h3 class="family__side">Groom's Family</h3>
     <p class="family__names" id="groomParents">
-      <span class="family__line" data-role="mother">
-        <span class="family__role">Mother</span>
-        <span class="family__name" id="groomMother"></span>
-      </span>
       <span class="family__line" data-role="father">
         <span class="family__role">Father</span>
         <span class="family__name" id="groomFather"></span>
       </span>
-    </p>
+    <span class="family__line" data-role="mother">
+        <span class="family__role">Mother</span>
+        <span class="family__name" id="groomMother"></span>
+      </span>
+      </p>
   </div>
   <div class="family__divider" aria-hidden="true"></div>
   <div class="family" data-side="bride">
@@ -473,8 +473,8 @@
        the card opens exactly as it would with music. -->
   <audio id="flute" src="/assets/audio/flute.mp3" preload="auto"></audio>
 
-<script src="/data-bride.js?v=3aa4464a"></script>
-<script src="/app.js?v=268687a0"></script>
+<script src="/data-bride.js?v=dec40dee"></script>
+<script src="/app.js?v=7a7a6200"></script>
 <!-- family.js last, and only on this page. It reads the same window.WEDDING_DATA
      and adds the sections above; app.js is shared unchanged with index.html, so
      nothing on the friends page depends on this file. -->

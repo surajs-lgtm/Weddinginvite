@@ -12,7 +12,7 @@
 
    Nothing here writes to the workbook or the page in a way a visitor can
    change, matching the rule app.js follows: this page is read-only, and every
-   edit happens in wedding-details.xlsx followed by build_site.py.
+   edit happens in groom-details.xlsx followed by build_site.py.
 
    Every block hides itself when its data is blank, so a half-finished workbook
    produces a shorter page rather than a page full of empty headings.
@@ -29,7 +29,7 @@
 
   /* The one phrase this file writes that app.js does not already own: the note
      under the rituals heading, which is rewritten to match however many
-     verified rituals are actually shown. English unless data.ui says else. */
+     published rituals are actually shown. English unless data.ui says else. */
   function ritualsSub(shown, total) {
     var ui = data.ui || {};
     if (ui.ritualsExplained) {
@@ -38,10 +38,28 @@
     return shown + " of the " + total +
       " functions are explained here. The rest are listed in the schedule below.";
   }
-  var events = data.events || [];
+  /* The workbook's Audience column decides which card a record is allowed to
+     appear on: Friends, Family or Both. build_site.py has already dropped every
+     Publish = No row, so this only splits what survives between the two pages.
+     The filter lives here, on the data, rather than hiding elements in CSS: a
+     friends-only record hidden with display:none is still in the page and
+     still readable in view-source, which is the opposite of what the column is
+     for. A record with no audience counts as Both, matching norm_audience()
+     on the Python side. */
+  function forAudience(records, side) {
+    return (records || []).filter(function (r) {
+      if (!r) return false;
+      var a = String(r.audience || "both").trim().toLowerCase();
+      if (a === "both") return true;
+      if (a === "friends") return side === "friends";
+      if (a === "family") return side === "family";
+      return true;
+    });
+  }
+  var events = forAudience(data.events, "family");
   var family = data.family || {};
   var F = family.details || {};
-  var contacts = family.contacts || [];
+  var contacts = forAudience(family.contacts, "family");
   /* Which family this card was printed for, worked out once by build_site.py
      from the workbook's "Card Flank". The groom's family sends the card with
      Suraj first, the bride's family with Priyanka first. */
@@ -134,9 +152,9 @@
   })();
 
   /* ------------------------------------------------------------ rituals */
-  /* One card per function that has a verified explanation, in schedule order.
-     Unverified rows never reach here: build_site.py drops them when it reads
-     the Rituals sheet, so a guess cannot be shown to a relative. */
+  /* One card per function that has an explanation, in schedule order.
+     Rows with Publish = No never reach here: build_site.py drops them when it
+     reads the Rituals sheet, so a guess cannot be shown to a relative. */
   (function rituals() {
     var sec = $("rituals");
     var list = $("ritualList");
@@ -155,13 +173,19 @@
 
     events.forEach(function (ev) {
       var r = ev.ritual || {};
-      /* Only the verified ritual text opens a card. This used to read
+      /* Only the published ritual text opens a card. This used to read
          `r.familyNote` as well, but familyNote lives on the event, not the
          ritual, so that term was always undefined and the check rested
          entirely on what/why. Left as the explicit pair it actually is: the
-         guarantee that nothing unverified renders is build_site.py dropping
+         guarantee that nothing unpublished renders is build_site.py dropping
          those rows at the Rituals sheet, and `ritual` is `{}` without one. */
       if (!r.what && !r.why) return;
+
+      /* The ritual carries its own Audience, separate from its event's. An
+         event can be Family-visible while its explanation is not, so the
+         ritual is filtered in its own right -- otherwise a friends-only
+         explanation would ride in on a family-only function. */
+      if (!forAudience([r], "family").length) return;
 
       var card = el("article", "ritual");
 
@@ -191,7 +215,7 @@
       shown++;
     });
 
-    /* The heading promises every function, but only the verified ones are
+    /* The heading promises every function, but only the published ones are
        listed. A relative counting twelve rows against seven cards would think
        five had gone missing, so the count is rewritten to what is shown. */
     if (shown && shown !== events.length) {
@@ -213,7 +237,7 @@
     var list = $("awaitingList");
     if (!sec || !list) return;
 
-    var members = (family.members || []).filter(function (m) {
+    var members = forAudience(family.members, "family").filter(function (m) {
       return m && String(m.name || "").trim();
     });
 

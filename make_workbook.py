@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Create wedding-details.xlsx - the editable master sheet for the wedding website.
+Create groom-details.xlsx - the editable groom sheet for the wedding website.
 
 Run:  python3 make_workbook.py
 """
@@ -11,7 +11,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "wedding-details.xlsx")
+OUT = os.path.join(HERE, "groom-details.xlsx")
 
 FILLIN = "-- FILL IN --"
 

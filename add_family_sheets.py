@@ -22,7 +22,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.worksheet.datavalidation import DataValidation
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BOOK = os.path.join(HERE, "wedding-details.xlsx")
+BOOK = os.path.join(HERE, "groom-details.xlsx")
 
 FILLIN = "-- FILL IN --"
 MAROON = "7B1E2B"
@@ -438,7 +438,7 @@ def write_function_family_column(wb):
 
 def main():
     if not os.path.exists(BOOK):
-        raise SystemExit("Missing wedding-details.xlsx")
+        raise SystemExit("Missing groom-details.xlsx")
 
     wb = write_family_sheets(load_workbook(BOOK))
     wb.save(BOOK)

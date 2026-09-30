@@ -41,7 +41,7 @@ DATA = os.path.join(DOCS, "data-hindi.js")
 PAGE = os.path.join(DOCS, "demo-hindi.html")
 
 # Fixed phrases only. See the module docstring for what is left out and why.
-# Keys are the real field names in wedding-details.xlsx, so a missing key here
+# Keys are the real field names in groom-details.xlsx, so a missing key here
 # shows up as English still on the page rather than as a silent no-op.
 STRINGS = {
     # --- the card, and the wording both pages share -----------------------

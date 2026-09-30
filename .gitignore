@@ -20,22 +20,20 @@ __pycache__/
 # To keep a rebuildable copy under version control too, delete the line below --
 # but read the note above first, and check the RSVP List sheet holds no real
 # guests before you do.
-wedding-details.xlsx
-~$wedding-details.xlsx
+groom-details.xlsx
+~$groom-details.xlsx
 *.xlsx.lock
 
 # Scratch workbooks kept alongside the main one, and the lock file Excel leaves
 # while a workbook is open. family_list.xlsx holds relatives' names, so it stays
-# out of the repo for the same reason wedding-details.xlsx does.
+# out of the repo for the same reason groom-details.xlsx does.
 family_list.xlsx
 ~$*.xlsx
 
-# The copy handed to the bride, made by make_bride_workbook.py. It is built
-# from wedding-details.xlsx and inherits everything in it, including the
-# relatives' names and whatever is in the RSVP List sheet, so it is ignored for
-# the same reason the main workbook is. It is a file to send to a person, not a
-# file to publish: generate it fresh when it is needed rather than committing
-# one.
+# bride-details.xlsx, her own workbook. It is a separate file with its own
+# schedule and her own relatives, not a copy of the groom's, and it is ignored
+# for the same reason groom-details.xlsx is: it holds real names and phone
+# numbers. Both workbooks are kept out of the repo.
 bride-details.xlsx
 
 # The Hindi demo from make_hindi_demo.py. Local only, by design -- it exists so

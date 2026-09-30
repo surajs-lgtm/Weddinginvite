@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Convert wedding-details.xlsx into site/data.js.
+Convert groom-details.xlsx into site/data.js.
 
 The workbook is the source of truth. Edit the spreadsheet, run this script,
 and refresh the page.
@@ -26,7 +26,7 @@ except ImportError:
     sys.exit("openpyxl is required:  pip3 install openpyxl")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BOOK = os.path.join(HERE, "wedding-details.xlsx")
+BOOK = os.path.join(HERE, "groom-details.xlsx")
 OUT = os.path.join(HERE, "docs", "data.js")
 
 FILLIN = "-- FILL IN --"
@@ -113,9 +113,39 @@ def is_blank(value):
     return text == "" or text == FILLIN or text.startswith("-- example")
 
 
-def is_confirmed(value):
-    """The Verified? column. Only a Yes means the row has been checked."""
+# Every record-bearing sheet ends with these two columns. Publish is the hard
+# gate: a row that is anything but a Yes is dropped here, at build time, so an
+# unpublished record never reaches the generated data file at all. Audience
+# then decides which of the two pages a surviving record is allowed to render
+# on. Verified? used to do the Publish job for rituals and members; note that
+# on Wedding Functions it only ever gated the guest-facing note, while the
+# event itself was always published. Merging the two means a published event
+# now shows its note too.
+AUDIENCES = ("friends", "family", "both")
+
+
+def is_published(value):
+    """The Publish column. Only a Yes means the row goes on the site."""
     return bool(value) and str(value).strip().lower().startswith("y")
+
+
+def norm_audience(value):
+    """The Audience column, normalised to friends/family/both.
+
+    An unset or misspelled cell becomes "both" rather than hiding the record:
+    a typo should not silently delete something the family was expecting, and
+    the column has a dropdown so the typo case should not arise in practice.
+    """
+    if is_blank(value):
+        return "both"
+    text = str(value).strip().lower()
+    if text in AUDIENCES:
+        return text
+    if text.startswith("friend"):
+        return "friends"
+    if text.startswith("fam"):
+        return "family"
+    return "both"
 
 
 # ------------------------------------------------------------------ read
@@ -196,9 +226,9 @@ def read_field_sheet(wb, name):
 
 
 def read_rituals(wb):
-    """The Rituals sheet, one row per function, gated on Verified?.
+    """The Rituals sheet, one row per function, gated on Publish.
 
-    A row whose Verified? is anything but a Yes is dropped, so a half-researched
+    A row whose Publish is anything but a Yes is dropped, so a half-researched
     explanation never reaches a relative. Matches a function name loosely, so
     "Madwa" in the sheet finds the "Madwa" event and "Baraat Prasthan" finds
     "Baraat Prasthan", but a ritual that no longer matches any function is
@@ -208,14 +238,20 @@ def read_rituals(wb):
         return {}
     ws = wb["Rituals"]
     out = {}
-    for name, what, why, note, verified in ws.iter_rows(min_row=2, values_only=True):
-        if is_blank(name) or not is_confirmed(verified):
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        def cell(i):
+            return row[i] if i < len(row) else None
+
+        name, what, why, note = cell(0), cell(1), cell(2), cell(3)
+        publish, audience = cell(4), cell(5)
+        if is_blank(name) or not is_published(publish):
             continue
         key = str(name).strip().lower()
         out[key] = {
             "what": "" if is_blank(what) else str(what).strip(),
             "why": "" if is_blank(why) else str(why).strip(),
             "note": "" if is_blank(note) else str(note).strip(),
+            "audience": norm_audience(audience),
         }
     return out
 
@@ -223,22 +259,23 @@ def read_rituals(wb):
 def read_members(wb):
     """The Family Members sheet, one row per person, name required.
 
-    These are the names printed under "Eagerly Awaiting Your Presence". Unlike
-    the Rituals sheet this is a display list, not an explanation, so there is no
-    Verified? gate -- but the column is there anyway, and a row is only printed
-    when it says Yes. That way a relative's name typed in but not yet checked
-    does not reach the page by accident.
+    These are the names printed under "Eagerly Awaiting Your Presence".
+    Unlike the Rituals sheet this is a display list, not an explanation, so a
+    row is only printed when its Publish cell says Yes. That way a relative's
+    name typed in but not yet marked for publication does not reach the page by
+    accident.
     """
     if "Family Members" not in wb.sheetnames:
         return []
     ws = wb["Family Members"]
     rows = []
-    for name, relation, side, frm, verified in ws.iter_rows(
-        min_row=2, values_only=True
-    ):
-        if is_blank(name):
-            continue
-        if not is_confirmed(verified):
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        def cell(i):
+            return row[i] if i < len(row) else None
+
+        name, relation, side, frm = cell(0), cell(1), cell(2), cell(3)
+        publish, audience = cell(4), cell(5)
+        if is_blank(name) or not is_published(publish):
             continue
         rows.append(
             {
@@ -246,21 +283,31 @@ def read_members(wb):
                 "relation": "" if is_blank(relation) else str(relation).strip(),
                 "side": "" if is_blank(side) else str(side).strip(),
                 "from": "" if is_blank(frm) else str(frm).strip(),
+                "audience": norm_audience(audience),
             }
         )
     return rows
 
 
 def read_contacts(wb):
-    """The Family Contacts sheet, one row per person, name required."""
+    """The Family Contacts sheet, one row per person, name required.
+
+    Family-only by default: a phone number on the family page is not something
+    a guest should be able to find, so an unstated Audience still normalises
+    through norm_audience and the column has a dropdown for the rest.
+    """
     if "Family Contacts" not in wb.sheetnames:
         return []
     ws = wb["Family Contacts"]
     rows = []
-    for name, relation, phone, about, note in ws.iter_rows(
-        min_row=2, values_only=True
-    ):
-        if is_blank(name):
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        def cell(i):
+            return row[i] if i < len(row) else None
+
+        name, relation, phone = cell(0), cell(1), cell(2)
+        about, note = cell(3), cell(4)
+        publish, audience = cell(5), cell(6)
+        if is_blank(name) or not is_published(publish):
             continue
         rows.append(
             {
@@ -269,6 +316,7 @@ def read_contacts(wb):
                 "phone": "" if is_blank(phone) else str(phone).strip(),
                 "about": "" if is_blank(about) else str(about).strip(),
                 "note": "" if is_blank(note) else str(note).strip(),
+                "audience": norm_audience(audience),
             }
         )
     return rows
@@ -311,15 +359,24 @@ def read_venues(wb):
 
 
 def read_rsvps(wb):
-    """Sheet 4: optional guest list, shown as a counter only."""
+    """Sheet 4: optional guest list, shown as a counter only.
+
+    Rows are read positionally rather than unpacked, because the sheet carries
+    trailing Publish and Audience columns and a fixed 7-tuple unpack would
+    raise the moment anyone filled one of them in.
+    """
     if "RSVP List" not in wb.sheetnames:
         return []
     ws = wb["RSVP List"]
     rows = []
-    for name, relation, side, phone, status, guests, meal in ws.iter_rows(
-        min_row=2, values_only=True
-    ):
-        if is_blank(name):
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        def cell(i):
+            return row[i] if i < len(row) else None
+
+        name, relation, side = cell(0), cell(1), cell(2)
+        phone, status, guests, meal = cell(3), cell(4), cell(5), cell(6)
+        publish, audience = cell(7), cell(8)
+        if is_blank(name) or not is_published(publish):
             continue
         rows.append(
             {
@@ -330,6 +387,7 @@ def read_rsvps(wb):
                 "status": "" if is_blank(status) else str(status).strip(),
                 "guests": int(guests) if isinstance(guests, (int, float)) else 0,
                 "meal": "" if is_blank(meal) else str(meal).strip(),
+                "audience": norm_audience(audience),
             }
         )
     return rows
@@ -414,9 +472,9 @@ def format_clock(minutes):
 def read_functions(wb, default_year, rituals=None):
     """Sheet 2: the event schedule, grouped by day.
 
-    The sheet grew a "Family Detail" column after "Verified?", so the row is
-    read by position rather than unpacked into named variables: a fixed 7-tuple
-    unpack would raise ValueError the moment anyone typed into column H.
+    Read by position rather than unpacked into named variables: the sheet has
+    grown trailing Publish and Audience columns over time, and a fixed-length
+    unpack would raise ValueError the moment anyone typed into one of them.
     """
     if "Wedding Functions" not in wb.sheetnames:
         return [], []
@@ -427,8 +485,11 @@ def read_functions(wb, default_year, rituals=None):
             return row[i] if i < len(row) else None
 
         order, date, name, time = cell(0), cell(1), cell(2), cell(3)
-        venue, note, verified, family_note = cell(4), cell(5), cell(6), cell(7)
-        if is_blank(name) or is_blank(date):
+        venue, note = cell(4), cell(5)
+        family_note, publish, audience = cell(6), cell(7), cell(8)
+        # Publish is the record's gate: an unpublished function is not written
+        # to the data file at all, so it cannot reach either page by accident.
+        if is_blank(name) or is_blank(date) or not is_published(publish):
             continue
         parsed = parse_date(date, default_year)
         if not parsed:
@@ -437,6 +498,7 @@ def read_functions(wb, default_year, rituals=None):
         start, end = split_time_range(time)
         event_name = str(name).strip()
         ritual = match_ritual(rituals, event_name)
+        icon = icon_for(name)
         events.append(
             {
                 "order": int(order) if isinstance(order, (int, float)) else len(events) + 1,
@@ -446,14 +508,21 @@ def read_functions(wb, default_year, rituals=None):
                 "timeStart": format_clock(start),
                 "timeEnd": format_clock(end),
                 "startMinutes": start,
-                "endMinutes": end,
+                # "" rather than None when a function has no end time. The .ics
+                # export still needs to tell "no end" from "ends at midnight",
+                # so app.js reads this with endMins() instead of == null.
+                "endMinutes": end if end is not None else "",
                 "venue": "" if is_blank(venue) else str(venue).strip(),
-                # the note is guest-facing; keep it only once it is confirmed
-                "note": "" if is_blank(note) or not is_confirmed(verified) else str(note).strip(),
-                "verified": bool(verified) and str(verified).strip().lower().startswith("y"),
-                "icon": icon_for(name),
-                "iconSvg": icon_svg(icon_for(name)),
-                # family-page only, and not gated on Verified? because these are
+                # the note is guest-facing and rides along with the record;
+                # before Publish existed this was gated separately, because
+                # Verified? only ever hid the note and never the event
+                "note": "" if is_blank(note) else str(note).strip(),
+                "audience": norm_audience(audience),
+                # "" not None: nothing reads this key, but a null here would be
+                # the one place a bare null reaches the generated data file
+                "icon": "" if is_blank(icon) else icon,
+                "iconSvg": icon_svg(icon),
+                # family-page only, and not gated on Publish because these are
                 # written for relatives rather than derived from the card
                 "familyNote": "" if is_blank(family_note) else str(family_note).strip(),
                 "ritual": ritual or {},
@@ -674,11 +743,11 @@ def build(book=None, out=None):
     family_missing = sorted(
         label for label, value in family["details"].items() if not str(value).strip()
     )
-    unverified = sorted(
+    unpublished = sorted(
         wb["Rituals"].cell(row=r, column=1).value
         for r in range(2, wb["Rituals"].max_row + 1)
         if "Rituals" in wb.sheetnames
-        and not is_confirmed(wb["Rituals"].cell(row=r, column=5).value)
+        and not is_published(wb["Rituals"].cell(row=r, column=5).value)
         and not is_blank(wb["Rituals"].cell(row=r, column=1).value)
     )
 
@@ -767,9 +836,9 @@ def build(book=None, out=None):
         print(f"\nFamily page still to fill in ({len(family_missing)}):")
         for label in family_missing:
             print(f"  - {label}")
-    if unverified:
-        print(f"\nRituals not yet verified, hidden from the family page ({len(unverified)}):")
-        for label in unverified:
+    if unpublished:
+        print(f"\nRituals not published, hidden from the site ({len(unpublished)}):")
+        for label in unpublished:
             print(f"  - {label}")
 
 

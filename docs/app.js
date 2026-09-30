@@ -27,13 +27,43 @@
     return n.getFullYear() + "-" + String(n.getMonth() + 1).padStart(2, "0") + "-" + String(n.getDate()).padStart(2, "0");
   }
 
+  /* The workbook's end time, or null when the function has none. build_site.py
+     writes "" there rather than null, so the generated data carries no bare
+     nulls; reading it as "is this a usable number" keeps the .ics export below
+     correct either way -- an empty string used to be indistinguishable from a
+     missing value under == null, and would have produced a DTEND of nothing. */
+  function endMins(ev) {
+    var e = ev && ev.endMinutes;
+    return (typeof e === "number" && isFinite(e)) ? e : null;
+  }
+
   /* ------------------------------------------------------------ data */
   /* Read straight from data.js. There is deliberately no localStorage override
      and no in-page editor: this page is opened by guests, so nothing here may
-     let a visitor rewrite the couple's details. Edit wedding-details.xlsx and
+     let a visitor rewrite the couple's details. Edit groom-details.xlsx and
      run `python3 build_site.py` instead. */
   var data = JSON.parse(JSON.stringify(window.WEDDING_DATA || { details: {}, events: [], days: [], venues: [] }));
   var D = data.details || {};
+
+  /* The workbook's Audience column decides which card a record is allowed to
+     appear on: Friends, Family or Both. build_site.py has already dropped every
+     Publish = No row, so this only splits what survives between the two pages.
+     A record with no audience set counts as Both, which matches
+     norm_audience() on the Python side -- the two must not disagree.
+
+     Filtering happens here, on the data, rather than by hiding elements in CSS:
+     a hidden element is still in the page and still in view-source, so a
+     family-only function would be one "View Source" away from a guest. */
+  function forAudience(records, side) {
+    return (records || []).filter(function (r) {
+      if (!r) return false;
+      var a = String(r.audience || "both").trim().toLowerCase();
+      if (a === "both") return true;
+      if (a === "friends") return side === "friends";
+      if (a === "family") return side === "family";
+      return true;
+    });
+  }
 
   /* Weekdays and month names come from the browser's own date data rather than
      a table kept in this file, so a translated card gets the names, and the
@@ -100,8 +130,15 @@
     families.insertBefore(lead, follow);
     if (rule) families.insertBefore(rule, follow);
   }
-  var events = data.events || [];
-  var days = data.days || [];
+  var events = forAudience(data.events, "friends");
+  /* days[].events is a nested copy of the same records, so filtering data.events
+     alone would still print every family-only function in the schedule below.
+     Regroup the day objects with the same filter and drop any day left empty. */
+  var days = (data.days || [])
+    .map(function (day) {
+      return { date: day.date, events: forAudience(day.events, "friends") };
+    })
+    .filter(function (day) { return day.events.length; });
   var venues = data.venues || [];
 
   /* ============================================================ meta */
@@ -201,7 +238,11 @@
   }
 
   /* ============================================================ countdown */
-  var target = data.countdown && data.countdown.date ? data.countdown.date : heroDate;
+  /* The countdown target is itself a record, so it carries an Audience too. A
+     countdown pointed at a family-only function must not appear on the friends
+     card, or its name and time would give the function away. */
+  var countdown = forAudience([data.countdown], "friends")[0] || null;
+  var target = countdown && countdown.date ? countdown.date : heroDate;
   var targetTime = null;
   if (target) {
     var firstStart = events.find(function (e) { return e.date === target; });
@@ -209,14 +250,14 @@
     targetTime = new Date(target + "T00:00:00");
     targetTime.setMinutes(mins);
   }
-  setText("countdownLabel", (data.countdown && data.countdown.event) ? ui("countingDownTo") + " " + data.countdown.event : ui("countingDownToWedding"));
+  setText("countdownLabel", (countdown && countdown.event) ? ui("countingDownTo") + " " + countdown.event : ui("countingDownToWedding"));
 
   // The Baraat feature card is captioned from the same countdown object, so it
   // can never drift out of step with the countdown above it.
   (function () {
     var box = $("feature");
-    if (!box || !data.countdown) return;
-    var c = data.countdown;
+    if (!box || !countdown) return;
+    var c = countdown;
     setText("featureName", c.event || "");
     var when = niceDate(c.date, { weekday: "long", day: "numeric", month: "long" });
     if (c.time) when += " · " + c.time;
@@ -301,7 +342,7 @@
     row.className = "event";
     row.dataset.date = ev.date;
     row.dataset.start = ev.startMinutes == null ? "" : ev.startMinutes;
-    row.dataset.end = ev.endMinutes == null ? "" : ev.endMinutes;
+    row.dataset.end = endMins(ev) == null ? "" : endMins(ev);
 
     var time = ev.timeStart || ev.time;
     var icon =
@@ -458,7 +499,7 @@
         "UID:" + ev.date + "-" + ev.order + "@wedding",
         "DTSTAMP:" + now,
         "DTSTART:" + icsDate(ev.date, ev.startMinutes),
-        "DTEND:" + icsDate(ev.date, ev.endMinutes == null ? (ev.startMinutes == null ? null : ev.startMinutes + 60) : ev.endMinutes),
+        "DTEND:" + icsDate(ev.date, endMins(ev) == null ? (ev.startMinutes == null ? null : ev.startMinutes + 60) : endMins(ev)),
         "SUMMARY:" + coupleLine + " - " + ev.event,
         "LOCATION:" + where,
         "DESCRIPTION:" + (ev.note || coupleLine) +

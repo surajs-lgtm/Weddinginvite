@@ -5,7 +5,8 @@ the source of truth; the site is generated from it.
 
 ```
 wedding planning/
-├── wedding-details.xlsx     <- edit this
+├── groom-details.xlsx        <- edit this
+├── bride-details.xlsx        <- her copy, edited independently
 ├── build_site.py            <- turns the workbook into docs/data.js
 ├── make_workbook.py         <- recreates the workbook from scratch
 ├── add_family_sheets.py     <- the family-only sheets' content, and a
@@ -25,7 +26,7 @@ wedding planning/
         └── icons/*.svg      <- one line drawing per ritual
 ```
 
-`wedding-details.xlsx` is deliberately **not** committed. It is your private
+`groom-details.xlsx` is deliberately **not** committed. It is your private
 copy, and once filled in it will hold real phone numbers, plus an RSVP List sheet
 meant for guests' names and replies. It does not need to be published: `docs/`
 is the finished site, and `docs/data.js` is tracked, so editing the spreadsheet
@@ -33,7 +34,7 @@ and running `build_site.py` still updates the live site on the next push.
 
 ## 1. Fill in the details
 
-Open **`wedding-details.xlsx`**. Every gold `-- FILL IN --` cell needs your
+Open **`groom-details.xlsx`**. Every gold `-- FILL IN --` cell needs your
 answer. These came off the card by machine reading and still need checking:
 
 **Wedding Details sheet** — Groom, Bride, city, venue name and
@@ -83,17 +84,64 @@ unless you are tracking responses yourself.
 The year is not printed on the card, so `2026` is a placeholder. Change it in
 one place, `Wedding Year`, and the function dates follow.
 
+### Publish and Audience
+
+Five of the sheets carry records rather than settings: **Wedding Functions**,
+**Rituals**, **Family Members**, **Family Contacts** and **RSVP List**. Each one
+ends with two dropdown columns.
+
+**Publish** decides whether a row exists on the site at all.
+
+| Value | Meaning |
+| --- | --- |
+| `Yes` | the row is published |
+| `No` | the row is dropped at build time |
+
+`No` is stronger than hiding something: the row is never written into the
+generated `data.js`, so it cannot be reached on either page, not even by
+viewing the page source. Anything left blank counts as `No`, which means a row
+someone has just typed in stays private until they have decided to publish it.
+
+**Audience** decides which of the two pages a published row may appear on.
+
+| Value | Meaning |
+| --- | --- |
+| `Both` | friends and family (the default) |
+| `Friends` | the friends page only |
+| `Family` | the family page only |
+
+This is the column to reach for when something is finished but not for
+everyone — a family member's name is fine on the family card but not on the one
+going out to guests, for instance. A blank or unrecognised value counts as
+`Both`, so a typo widens the audience rather than silently hiding a row.
+
+This replaces the old `Verified?` column. That column only ever gated the
+Rituals, Family Members and the guest-facing note on Wedding Functions, and it
+did two different jobs depending on the sheet. `Publish` is the same idea
+applied consistently, and `Audience` covers the cases it could not express.
+
 ## 2. Rebuild the site
 
 ```bash
 python3 build_site.py
 ```
 
+That rebuilds the groom's side from `groom-details.xlsx`. Her side is a
+separate workbook with a separate command, and it reads nothing from his:
+
+```bash
+python3 build_site.py --book bride-details.xlsx --out docs/data-bride.js
+```
+
+The two never touch each other's file, so a change in one cannot reach the
+other's pages. Run whichever side you changed; neither one overwrites the
+other's output.
+
 It prints how many functions and days it found, and lists anything still
 unfilled. Then open or refresh the page.
 
 The same script is safe to run every time you change the spreadsheet. If it
-prints `Missing wedding-details.xlsx`, run `python3 make_workbook.py` first.
+prints `Missing groom-details.xlsx`, run `python3 make_workbook.py` first.
 
 **`make_workbook.py` recreates the whole file and overwrites whatever is
 there.** It has no `--dry-run` and no `--help`, and it does not merge, so do not
@@ -165,7 +213,7 @@ JSON* button would hand them a file shaped exactly like `data.js`. For the same
 reason `app.js` reads `data.js` directly and ignores anything in
 `localStorage`.
 
-To change a detail, edit `wedding-details.xlsx`, run `python3 build_site.py`, and
+To change a detail, edit `groom-details.xlsx`, run `python3 build_site.py`, and
 reload. That is the only path, and it stays on your machine.
 
 ## 5. The look
@@ -273,8 +321,9 @@ are the values to check most carefully. The 12 function rows came off the
 printed table and are more trustworthy, but still worth a look.
 
 How to run
-Edit wedding‑details.xlsx (the master workbook).
-Run python3 build_site.py (or make_bride_workbook.py for bride‑only changes).
+Edit groom-details.xlsx (or bride-details.xlsx for her side).
+Run python3 build_site.py
+  python3 build_site.py --book bride-details.xlsx --out docs/data-bride.js
 git add -A && git commit -m "…" && git push origin main.
 GitHub Pages rebuilds; the live site now shows your changes.
 

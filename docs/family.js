@@ -48,7 +48,6 @@
   var events = forAudience(data.events, "family");
   var family = data.family || {};
   var F = family.details || {};
-  var contacts = forAudience(family.contacts, "family");
   /* Which family this card was printed for, worked out once by build_site.py
      from the workbook's "Card Flank". The groom's family sends the card with
      Suraj first, the bride's family with Priyanka first. */
@@ -239,55 +238,9 @@
     sec.hidden = false;
   })();
 
-  /* ---------------------------------------------------------- contacts */
-  /* Rows from the Family Contacts sheet, then the two named contacts from
-     Family Details, deduped so the same person does not appear twice. */
-  (function contactsSection() {
-    var sec = $("contactsSec");
-    var list = $("contactList");
-    if (!sec || !list) return;
-
-    var people = [];
-    var seen = {};
-
-    function add(name, relation, phone, about) {
-      name = (name || "").trim();
-      phone = (phone || "").trim();
-      if (!name && !phone) return;
-      var key = (name + "|" + phone).toLowerCase();
-      if (seen[key]) return;
-      seen[key] = true;
-      people.push({ name: name, relation: relation, phone: phone, about: about });
-    }
-
-    contacts.forEach(function (c) { add(c.name, c.relation, c.phone, c.about); });
-
-    [1, 2].forEach(function (i) {
-      add(
-        F["Family Contact " + i + " Name"],
-        F["Family Contact " + i + " Role"],
-        F["Family Contact " + i + " Phone"],
-        ""
-      );
-    });
-
-    if (!people.length) { sec.hidden = true; return; }
-
-    people.forEach(function (p) {
-      var card = el("div", "contact");
-      if (p.name) card.appendChild(el("p", "contact__name", p.name));
-      if (p.relation) card.appendChild(el("p", "contact__role", p.relation));
-      if (p.about) card.appendChild(el("p", "contact__about", p.about));
-      if (p.phone) {
-        var a = el("a", "contact__phone", p.phone);
-        a.href = telHref(p.phone);
-        card.appendChild(a);
-      }
-      list.appendChild(card);
-    });
-
-    sec.hidden = false;
-  })();
+  /* The "Who To Call" section moved to app.js. It is on both cards now, so it
+     is rendered once, in the shared script, and this file no longer owns it.
+     That is also why `family.contacts` is not read here any more. */
 
   /* ---------------------------------------------------------- logistics */
   (function logistics() {

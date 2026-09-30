@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-card="friends">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -293,6 +293,17 @@
   <div class="venue-grid" id="venueGrid"></div>
 </section>
 
+<!-- ============ family contacts ============
+     "If you need us" -- the same section the family page has, in the same
+     place, so a friend who was sent the short link can still find a number to
+     call. It appears only when the workbook actually holds a contact, so a
+     card with nothing filled in does not carry an empty heading. -->
+<section class="section section--tint" id="contactsSec" hidden>
+  <p class="section__eyebrow">If you need us</p>
+  <h2 class="section__title">Who To Call</h2>
+  <div class="contacts" id="contactList"></div>
+</section>
+
 <!-- ============ blessings ============ -->
   <!-- The old "The Rituals We Honour" grid, and the per-function ritual cards
        before it, are both gone: the schedule already lists the functions and
@@ -409,6 +420,6 @@
 
 
 <script src="data.js?v=3de38ae6"></script>
-<script src="app.js?v=22867f21"></script>
+<script src="app.js?v=03c09492"></script>
 </body>
 </html>

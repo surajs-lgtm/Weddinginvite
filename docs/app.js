@@ -141,6 +141,15 @@
     .filter(function (day) { return day.events.length; });
   var venues = data.venues || [];
 
+  /* Which card this is. The Audience column can send a record to the friends
+     page, the family page or both, so a section that honours it has to know
+     which one it is rendering. The marker lives on <html> because
+     build_site.py copies these pages verbatim to make the bride variants, and
+     the bride's family link is still a family card, not a friends one. */
+  var SIDE = document.documentElement.getAttribute("data-card") === "family"
+    ? "family"
+    : "friends";
+
   /* ============================================================ meta */
   var coupleLine = D["Couple Line (short)"] ||
     [D["Groom Name"], D["Bride Name"]].filter(Boolean).join(" weds ") || "We're Getting Married";
@@ -410,6 +419,90 @@
       '<circle cx="32" cy="32" r="6" fill="currentColor" opacity=".7"/>' +
       '<circle cx="32" cy="32" r="24" opacity=".25"/></svg>';
   }
+
+  /* The next two are the only helpers family.js used to own that app.js
+     genuinely needs too, now that both cards carry the contacts section. They
+     are duplicated rather than shared: family.js is a separate file loaded
+     with defer, and one small helper is a cheaper price than an export.
+
+     Named `node` rather than `el` because five other functions in this file
+     already declare a local `var el` for a single looked-up element, and a
+     helper called `el` would be shadowed inside all of them. */
+  function node(tag, className, content) {
+    var n = document.createElement(tag);
+    if (className) n.className = className;
+    if (content != null) n.textContent = content;
+    return n;
+  }
+
+  function telHref(phone) {
+    return "tel:" + String(phone).replace(/[^\d+]/g, "");
+  }
+
+  /* ============================================================ contacts
+     "If you need us" / "Who To Call", on both cards, straight after Venue &
+     Directions. Two sources, deduped so the same person is not listed twice:
+     the Family Contacts sheet, then the two named contacts on Family Details.
+
+     Which of those reach a given card is decided by the workbook's Audience
+     column, exactly as it is for functions and family members. A row left at
+     Family therefore shows on the family card only; set it to Both to put a
+     contact in front of friends as well. The two Family Details contacts have
+     no Audience cell of their own, so they follow the same rule as a blank
+     one -- both cards -- which is why the bride's two numbers appear on her
+     friends card without anything extra being ticked.
+
+     The section hides itself when nothing survives, so a workbook with the
+     contacts left empty does not show a heading over nothing. */
+  (function renderContacts() {
+    var sec = $("contactsSec");
+    var list = $("contactList");
+    if (!sec || !list) return;
+
+    var F = (data.family || {}).details || {};
+    var people = [];
+    var seen = {};
+
+    function add(name, relation, phone, about) {
+      name = (name || "").trim();
+      phone = (phone || "").trim();
+      if (!name && !phone) return;
+      var key = (name + "|" + phone).toLowerCase();
+      if (seen[key]) return;
+      seen[key] = true;
+      people.push({ name: name, relation: relation, phone: phone, about: about });
+    }
+
+    forAudience((data.family || {}).contacts, SIDE).forEach(function (c) {
+      add(c.name, c.relation, c.phone, c.about);
+    });
+
+    [1, 2].forEach(function (i) {
+      add(
+        F["Family Contact " + i + " Name"],
+        F["Family Contact " + i + " Role"],
+        F["Family Contact " + i + " Phone"],
+        ""
+      );
+    });
+
+    if (!people.length) { sec.hidden = true; return; }
+
+    people.forEach(function (p) {
+      var card = node("div", "contact");
+      if (p.name) card.appendChild(node("p", "contact__name", p.name));
+      if (p.relation) card.appendChild(node("p", "contact__role", p.relation));
+      if (p.about) card.appendChild(node("p", "contact__about", p.about));
+      if (p.phone) {
+        var a = node("a", "contact__phone", p.phone);
+        a.href = telHref(p.phone);
+        card.appendChild(a);
+      }
+      list.appendChild(card);
+    });
+
+    sec.hidden = false;
+  })();
 
   /* ============================================================ blessings
      The per-function ritual cards are gone: the schedule already lists the

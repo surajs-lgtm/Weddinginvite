@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-card="friends">
+<html lang="en" data-card="family">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>We're Getting Married</title>
-<meta name="description" id="metaDesc" content="Wedding invitation and schedule.">
+<meta name="description" id="metaDesc" content="Wedding invitation and schedule for family.">
 <meta property="og:title" id="ogTitle" content="We're Getting Married">
-<meta property="og:description" id="ogDesc" content="Wedding invitation and schedule.">
+<meta property="og:description" id="ogDesc" content="Wedding invitation and schedule for family.">
 <meta name="theme-color" content="#fdfbf6">
 <!-- Marks the document as script-capable before the stylesheet loads. The
      scroll-reveal hiding rule is scoped to .js, so this one attribute decides
@@ -17,8 +17,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=48627787">
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/styles.css?v=48627787">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
 
@@ -68,9 +68,10 @@
         </span>
 
         <span class="card__invite" id="introInvite">request the honour of your presence</span>
-        <!-- No date line here, same as the family page: the couple asked for no
-             date on the card. The control takes over the bottom anchor the date
-             held; see the .card__base:not(:has(.card__when)) rule in styles.css. -->
+        <!-- No date line here, unlike the friends page: this page carries the
+             full four-day schedule below, so the card does not repeat it. The
+             control takes over the bottom anchor the date held; see the
+             .card__base:not(:has(.card__when)) rule in styles.css. -->
 
         <button class="card__go" id="introGo" type="button" tabindex="-1">
           Open Invitation
@@ -171,7 +172,7 @@
     <span class="deco deco--corner deco--corner--bl" aria-hidden="true"></span>
     <span class="deco deco--corner deco--corner--br" aria-hidden="true"></span>
 
-    <img class="hero__kalash" src="assets/kalash.svg" alt="" aria-hidden="true">
+    <img class="hero__kalash" src="/assets/kalash.svg" alt="" aria-hidden="true">
 
     <p class="hero__blessing" id="heroBlessing">With the blessings of our families</p>
 
@@ -263,6 +264,48 @@
   </div>
 </section>
 
+<!-- ============ formal invitation (family page only) ============
+     The friends page goes straight from the names to the schedule. Relatives
+     expect the long formal wording first, so this restates the invitation in
+     the order a printed card uses it: the blessing, the couple, the ask, and
+     the date.
+
+     The parents are not repeated here. The families block immediately above
+     already names both sets under a FATHER / MOTHER label, and a printed card
+     names them once; printing them a second time a few lines down read as an
+     oversight rather than a courtesy.
+
+     Every block here hides itself when the matching Family Details field is
+     blank, so an unfinished workbook never leaves an empty heading. -->
+<section class="section section--tint" id="formalInvite">
+  <span class="deco deco--mandala" aria-hidden="true"></span>
+  <p class="section__eyebrow">The invitation</p>
+  <h2 class="section__title">You Are Invited</h2>
+  <div class="formal">
+    <p class="formal__line" id="formalBlessing"></p>
+    <p class="formal__names" id="formalNames"></p>
+    <p class="formal__ask" id="formalAsk"></p>
+    <p class="formal__dates" id="formalDates"></p>
+  </div>
+  <p class="formal__note" id="familyNoteBlock" hidden></p>
+</section>
+
+<!-- ============ eagerly awaiting your presence (family page only) ============
+     Relatives are named on a printed card so a guest can see who is hosting
+     them. The list is driven entirely by the "Family Members" sheet: add a row,
+     set Verified? to Yes, and the name appears. The heading hides until at
+     least one name is ready, so a half-filled sheet never shows a bare title.
+
+     Grouped by Side rather than printed as one column, so the two families
+     read as two lists. An unrecognised Side still prints, under no heading,
+     instead of being dropped — a name typed in should never vanish. -->
+<section class="section" id="awaiting" hidden>
+  <p class="section__eyebrow">With folded hands</p>
+  <h2 class="section__title" id="awaitingTitle">Eagerly Awaiting Your Presence</h2>
+  <p class="awaiting__note" id="awaitingNote" hidden></p>
+  <div class="awaiting" id="awaitingList"></div>
+</section>
+
 <!-- ============ schedule ============ -->
 <section class="section" id="schedule">
   <p class="section__eyebrow">Celebrations</p>
@@ -304,10 +347,13 @@
 </section>
 
 <!-- ============ family contacts ============
-     "If you need us" -- the same section the family page has, in the same
-     place, so a friend who was sent the short link can still find a number to
-     call. It appears only when the workbook actually holds a contact, so a
-     card with nothing filled in does not carry an empty heading. -->
+     Who to call, which is the question every relative actually has. Built from
+     the Family Contacts sheet, plus the two named contacts on Family Details.
+     Hidden entirely when nothing is filled in.
+
+     Placed after Venue & Directions, as the couple asked: someone reading for
+     a relative gets the practical "where do I go" answer first, and only then
+     the "who do I call if something goes wrong". -->
 <section class="section section--tint" id="contactsSec" hidden>
   <p class="section__eyebrow">If you need us</p>
   <h2 class="section__title">Who To Call</h2>
@@ -316,9 +362,9 @@
 
 <!-- ============ blessings ============ -->
   <!-- The old "The Rituals We Honour" grid, and the per-function ritual cards
-       before it, are both gone: the schedule already lists the functions and
-       the rituals are not being published. What remains is a single ashirwad
-       line, the one thing this page had no home for.
+       that followed it, are both gone: the schedule already lists the functions
+       and the rituals are not being published. What remains is a single
+       ashirwad line.
 
        Deliberately not the hero's "With the blessings of our families" and not
        the parents' names, which #families already carries. Repeating either
@@ -329,7 +375,6 @@
     <h2 class="section__title">Blessings for the Journey Ahead</h2>
     <p class="blessings__text" id="ashirwadText"></p>
   </section>
-
 
 <!-- ============ RSVP ============ -->
 <section class="section section--tint" id="rsvp">
@@ -426,10 +471,13 @@
        begin inside a real user gesture, and the only gesture here is opening
        the card. A missing file is not an error — the player stays hidden and
        the card opens exactly as it would with music. -->
-  <audio id="flute" src="assets/audio/flute.mp3" preload="auto"></audio>
+  <audio id="flute" src="/assets/audio/flute.mp3" preload="auto"></audio>
 
-
-<script src="data-bride.js?v=dec40dee"></script>
-<script src="app.js?v=ebb49a00"></script>
+<script src="/data-bride.js?v=dec40dee"></script>
+<script src="/app.js?v=ebb49a00"></script>
+<!-- family.js last, and only on this page. It reads the same window.WEDDING_DATA
+     and adds the sections above; app.js is shared unchanged with index.html, so
+     nothing on the friends page depends on this file. -->
+<script src="/family.js?v=c09be56d" defer></script>
 </body>
 </html>

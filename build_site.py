@@ -547,32 +547,42 @@ def write_variant_pages(folder, data_file):
     copies here rather than keeping two sets by hand is what stops them drifting
     apart after the next edit.
 
+    The bride's pages live under bride/ and bride/family/ because the site is
+    served from a custom domain at its own root, where /, /family/, /bride/ and
+    /bride/family/ are the four addresses worth handing out. A page a directory
+    deep cannot reach ../styles.css, so the sources reference every asset from
+    the root and the copy keeps those absolute paths untouched.
+
     The stamp loop below then rewrites the ?v= on the new data file in these
     copies exactly as it does for the originals, so the cache busting is not
     something the second card has to remember to do.
     """
     written = []
-    for src_name in ("index.html", "family.html"):
+    for src_name, out_name in (("index.html", "bride/index.html"),
+                               ("family/index.html", "bride/family/index.html")):
         src = os.path.join(folder, src_name)
         if not os.path.exists(src):
             continue
         with open(src, encoding="utf-8") as fh:
             html = fh.read()
         # Only the data tag. app.js and family.js are shared, and their stamps
-        # are already identical in the source page.
+        # are already identical in the source page. The leading slash is
+        # captured and put back, or the copy would point at data-bride.js
+        # relative to itself and find nothing.
         html, n = re.subn(
-            r'(src=")data\.js(\?v=[^"]*)?"',
-            lambda m: f'{m.group(1)}{data_file}"',
+            r'(src=")(/?)data\.js(\?v=[^"]*)?"',
+            lambda m: f'{m.group(1)}{m.group(2)}{data_file}"',
             html,
         )
         if not n:
             print(f"  warning: no data.js tag found in {src_name}; "
                   "left it alone rather than guessing")
             continue
-        out = os.path.join(folder, src_name.replace(".html", "-bride.html"))
+        out = os.path.join(folder, out_name)
+        os.makedirs(os.path.dirname(out), exist_ok=True)
         with open(out, "w", encoding="utf-8") as fh:
             fh.write(html)
-        written.append(os.path.basename(out))
+        written.append(out_name)
     if written:
         print("  variant pages: " + ", ".join(written))
     return written
@@ -722,12 +732,12 @@ def build(book=None, out=None):
 
     # Each build stamps its own pages and no others, so a variant build never
     # rewrites the originals and the original build never reaches for a page
-    # that may not exist. family.html is optional: before it exists there is
-    # nothing to rewrite.
+    # that may not exist. family/index.html is optional: before it exists there
+    # is nothing to rewrite.
     if data_name == "data.js":
-        pages = ("index.html", "family.html")
+        pages = ("index.html", "family/index.html")
     else:
-        pages = ("index-bride.html", "family-bride.html")
+        pages = ("bride/index.html", "bride/family/index.html")
 
     for page in pages:
         path = os.path.join(os.path.dirname(out), page)
@@ -743,9 +753,12 @@ def build(book=None, out=None):
             # new page leaves a bare `family.js?v=` in the template. Requiring
             # hex digits there would not match, and the empty query would sit
             # in the served tag forever, defeating the cache busting.
+            # The optional slash keeps the asset rooted: pages a directory deep
+            # are written with /app.js, and matching the bare name would strip
+            # the slash and leave a page that cannot load its own scripts.
             html = re.sub(
-                rf'({attr}="){re.escape(asset)}(\?v=[^"]*)?"',
-                lambda m, d=digest: f"{m.group(1)}{asset}?v={d}\"",
+                rf'({attr}=")(/?){re.escape(asset)}(\?v=[^"]*)?"',
+                lambda m, d=digest: f'{m.group(1)}{m.group(2)}{asset}?v={d}"',
                 html,
             )
 

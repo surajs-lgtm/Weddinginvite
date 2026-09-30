@@ -579,7 +579,7 @@
     $("savedList").innerHTML = list.map(function (r) {
       return '<div class="saved-list-item"><b>' + esc(r.name) + "</b><span>" +
         esc(r.guests) + (r.guests === 1 ? " guest" : " guests") + " · " +
-        esc(r.status) + (r.meal ? " · " + esc(r.meal) : "") + "</span></div>";
+        esc(r.status) + "</span></div>";
     }).join("");
   }
   refreshSaved();
@@ -595,7 +595,6 @@
       phone: $("rPhone").value.trim(),
       guests: Number($("rGuests").value) || 1,
       status: (form.querySelector('input[name="status"]:checked') || {}).value || "Attending",
-      meal: $("rMeal").value,
       note: $("rNote").value.trim(),
       at: new Date().toISOString()
     };
@@ -612,7 +611,6 @@
       name + " " + statusWord(record.status) + ".\n" +
       "Guests: " + record.guests + "\n" +
       (record.relation ? "Relation: " + record.relation + "\n" : "") +
-      (record.meal ? "Meal: " + record.meal + "\n" : "") +
       (record.note ? "Message: " + record.note + "\n" : "") +
       (D["Primary Venue Name"] ? "Venue: " + D["Primary Venue Name"] + "\n" : "");
 

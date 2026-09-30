@@ -328,7 +328,7 @@ def read_rsvps(wb):
             return row[i] if i < len(row) else None
 
         name, relation, side = cell(0), cell(1), cell(2)
-        phone, status, guests, meal = cell(3), cell(4), cell(5), cell(6)
+        phone, status, guests = cell(3), cell(4), cell(5)
         publish, audience = cell(7), cell(8)
         if is_blank(name) or not is_published(publish):
             continue
@@ -340,7 +340,6 @@ def read_rsvps(wb):
                 "phone": "" if is_blank(phone) else str(phone).strip(),
                 "status": "" if is_blank(status) else str(status).strip(),
                 "guests": int(guests) if isinstance(guests, (int, float)) else 0,
-                "meal": "" if is_blank(meal) else str(meal).strip(),
                 "audience": norm_audience(audience),
             }
         )

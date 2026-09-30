@@ -134,6 +134,13 @@ def read_details(wb):
     return parents_view(details)
 
 
+# Which parent leads inside each set, as the couple asked: the groom's mother
+# on the groom's card, the bride's father on the bride's. This has to agree with
+# the order of the family__line blocks in index.html and family.html, because
+# those are what the family page renders and this is what the card renders.
+PARENT_LEAD = {"Groom": "mother", "Bride": "father"}
+
+
 def parents_view(details):
     """Add the four parent fields plus a joined 'Groom's Parents' display value.
 
@@ -143,9 +150,10 @@ def parents_view(details):
     1. Normalise a workbook that still has the old single "Groom's Parents"
        field. That value is a father's -- it was typed into a field with no
        gender -- so it fills Father and Mother is left empty.
-    2. Join Mother and Father into the old display key so app.js and family.js
-       keep reading one field. The mother leads, as the couple asked: every
-       card and every card-derived string reads mother first, then father.
+    2. Join both parents into the old display key so app.js and family.js keep
+       reading one field. The lead differs per side, see PARENT_LEAD: the
+       groom's card reads "Smt. Pushpa Singh & Shri Randhir Prasad Singh" and
+       the bride's reads "Shri Samsher Bahadur Singh & Smt. Shubhawati Devi".
     3. A blank parent drops out of the join instead of leaving a dangling
        "&", and a side with neither stays empty so the card still removes the
        whole line.
@@ -159,8 +167,8 @@ def parents_view(details):
             father, mother = old, ""
         out["%s's Father" % side] = father
         out["%s's Mother" % side] = mother
-        # Mother first, so "Smt. Pushpa Singh & Shri Randhir Prasad Singh".
-        names = [n for n in (mother, father) if n]
+        pair = (father, mother) if PARENT_LEAD[side] == "father" else (mother, father)
+        names = [n for n in pair if n]
         # "&" between them, "and" for a married couple reads oddly
         out["%s's Parents" % side] = " & ".join(names) if names else ""
     return out

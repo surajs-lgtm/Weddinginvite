@@ -251,22 +251,38 @@
     var list = $("logisticsList");
     if (!sec || !list) return;
 
+    /* One row per Family Details field worth standing on its own. The second
+       element is the optional field holding its link, and only Accommodation
+       has one: a relative who is told the hotel name still has to find it, so
+       "Accommodation Link" opens it in Maps instead. Everything else is text
+       and carries no link. */
     var blocks = [
-      ["Baraat Route", "Where the baraat gathers, and where it goes"],
-      ["Parking", "Where to park"],
-      ["Accommodation", "Places to stay for out-of-town relatives"],
-      ["Gift / Shagun Note", "A note on gifts"]
+      ["Baraat Route"],
+      ["Parking"],
+      ["Accommodation", "Accommodation Link"],
+      ["Gift / Shagun Note"]
     ];
 
     var shown = 0;
     blocks.forEach(function (pair) {
       var value = (F[pair[0]] || "").trim();
-      if (!value) return;
+      var href = pair[1] ? (F[pair[1]] || "").trim() : "";
+      /* a link on its own is still worth showing: the hotel names may be left
+         blank while the map link is filled in, and a bare button beats nothing */
+      if (!value && !href) return;
 
       var block = el("div", "logistic");
       block.appendChild(el("h3", "logistic__title", pair[0]));
-      /* the second element is the default hint; the written value replaces it */
-      block.appendChild(el("p", "logistic__text", value || pair[1]));
+      if (value) block.appendChild(el("p", "logistic__text", value));
+      if (href) {
+        var a = el("a", "btn btn--soft btn--sm logistic__link", "Open in Maps");
+        a.href = href;
+        a.target = "_blank";
+        /* noopener keeps the new tab from reaching back into this one, the
+           same pair the venue map links use */
+        a.rel = "noopener";
+        block.appendChild(a);
+      }
       list.appendChild(block);
       shown++;
     });

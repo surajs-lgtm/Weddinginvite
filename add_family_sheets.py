@@ -189,6 +189,7 @@ FAMILY_ROWS = [
     ("Baraat Route", FILLIN, "Where the baraat gathers and where it goes. Leave blank for none."),
     ("Parking", FILLIN, "Where relatives should park. Leave blank for none."),
     ("Accommodation", FILLIN, "Nearby hotels for out-of-town relatives. Leave blank for none."),
+    ("Accommodation Link", FILLIN, "Google Maps link for the hotel. Leave blank for none."),
     ("Family Contact 1 Name", FILLIN, "Who a relative should call first"),
     ("Family Contact 1 Phone", FILLIN, "With country code"),
     ("Family Contact 1 Role", FILLIN, "e.g. Groom's uncle, coordinating on the day"),

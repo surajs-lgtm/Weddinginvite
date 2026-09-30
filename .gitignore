@@ -36,13 +36,6 @@ family_list.xlsx
 # numbers. Both workbooks are kept out of the repo.
 bride-details.xlsx
 
-# The Hindi demo from make_hindi_demo.py. Local only, by design -- it exists so
-# the Devanagari typography can be looked at before deciding whether to do a
-# real Hindi card. The generated pages and their data file are all ignored so a
-# demo can never end up deployed by accident.
-docs/hindi-demo-*.html
-docs/data-hindi.js
-
 # The bride's version of the card is NOT ignored. It is a real, finished card
 # that her family has to be able to open at a link, and it is built from
 # bride-details.xlsx by build_site.py. Once it is tracked here, rebuilding

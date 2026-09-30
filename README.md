@@ -57,8 +57,11 @@ Put a venue name in the **Venue** column only for the days that are not at the
 main venue, and it renders as a small tag on that row.
 
 **Family Details sheet** — only for `docs/family.html`. The long formal
-wording, a message to relatives, the baraat route, parking, accommodation, and
-two named contacts. **Family Contacts sheet** — one row per person, for the
+wording, a message to relatives, the baraat route, parking, accommodation and
+its map link, and two named contacts. `Accommodation Link` is optional: fill it
+in with a Google Maps URL and the accommodation block gets an **Open in Maps**
+button under the hotel names, so a relative can tap through instead of reading
+an address out loud. **Family Contacts sheet** — one row per person, for the
 "who do I call" section.
 
 **Family Members sheet** — the "Eagerly Awaiting Your Presence" list on the
@@ -186,7 +189,7 @@ schedule, the venue, RSVP.
 - **Eagerly Awaiting Your Presence**, the named relatives from the Family
   Members sheet, grouped into the groom's side and the bride's side
 - **Who To Call**, from the Family Contacts sheet
-- **Practical Details** — baraat route, parking, accommodation, gift note
+- **Practical Details** — baraat route, parking, accommodation (with an Open in Maps link when `Accommodation Link` is filled in), gift note
 
 Each of those blocks hides itself when its data is blank, so a half-filled
 workbook produces a shorter page rather than a page of empty headings.

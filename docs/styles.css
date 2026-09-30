@@ -1295,6 +1295,7 @@ body::after {
   font-size: 1.15rem; font-weight: 500; color: var(--maroon);
 }
 .logistic__text { margin: 0; font-size: .93rem; color: var(--ink-soft); line-height: 1.7; }
+.logistic__link { margin-top: 14px; display: inline-block; }
 
 /* --------------------------------------------------------- responsive */
 @media (max-width: 700px) {

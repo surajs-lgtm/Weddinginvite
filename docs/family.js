@@ -45,7 +45,10 @@
       return true;
     });
   }
-  var events = forAudience(data.events, "family");
+  /* No event filtering here. The schedule is rendered by app.js, which picks
+     the side from the data-card marker, so the family page's functions are
+     already filtered for this card. This file used to declare its own
+     `events` for that job and never used it. */
   var family = data.family || {};
   var F = family.details || {};
   /* Which family this card was printed for, worked out once by build_site.py

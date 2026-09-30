@@ -130,25 +130,28 @@
     families.insertBefore(lead, follow);
     if (rule) families.insertBefore(rule, follow);
   }
-  var events = forAudience(data.events, "friends");
+  /* Which card this is. Every Audience-filtered record below is split with
+     this, so the schedule, the countdown and the contacts section all answer
+     the same question. It used to be hardcoded to "friends" for the schedule
+     and the countdown, which meant a function marked Family was hidden on the
+     family page and one marked Friends was shown there -- exactly backwards.
+     The marker lives on <html> because build_site.py copies these pages
+     verbatim to make the bride variants, and the bride's family link is still
+     a family card, not a friends one. */
+  var SIDE = document.documentElement.getAttribute("data-card") === "family"
+    ? "family"
+    : "friends";
+
+  var events = forAudience(data.events, SIDE);
   /* days[].events is a nested copy of the same records, so filtering data.events
      alone would still print every family-only function in the schedule below.
      Regroup the day objects with the same filter and drop any day left empty. */
   var days = (data.days || [])
     .map(function (day) {
-      return { date: day.date, events: forAudience(day.events, "friends") };
+      return { date: day.date, events: forAudience(day.events, SIDE) };
     })
     .filter(function (day) { return day.events.length; });
   var venues = data.venues || [];
-
-  /* Which card this is. The Audience column can send a record to the friends
-     page, the family page or both, so a section that honours it has to know
-     which one it is rendering. The marker lives on <html> because
-     build_site.py copies these pages verbatim to make the bride variants, and
-     the bride's family link is still a family card, not a friends one. */
-  var SIDE = document.documentElement.getAttribute("data-card") === "family"
-    ? "family"
-    : "friends";
 
   /* ============================================================ meta */
   var coupleLine = D["Couple Line (short)"] ||
@@ -250,7 +253,7 @@
   /* The countdown target is itself a record, so it carries an Audience too. A
      countdown pointed at a family-only function must not appear on the friends
      card, or its name and time would give the function away. */
-  var countdown = forAudience([data.countdown], "friends")[0] || null;
+  var countdown = forAudience([data.countdown], SIDE)[0] || null;
   var target = countdown && countdown.date ? countdown.date : heroDate;
   var targetTime = null;
   if (target) {

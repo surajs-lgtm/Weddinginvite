@@ -211,8 +211,9 @@
   setText("footContact", [D["Contact Name"], D["Contact Phone"]].filter(Boolean).join(" · "));
 
   /* The families block lists each parent on their own labelled line rather
-     than one joined string, so a reader can tell the two apart. Both sides
-     lead with the father and follow with the mother, as the couple asked. The
+     than one joined string, so a reader can tell the two apart. The two sides
+     lead with different parents, matching the printed-card convention: the
+     groom's mother then his father, the bride's father then her mother. The
      markup is already in that order and this loop only fills the lines by id,
      so it reads them in matching order to keep the two easy to compare. A line
      with no name is removed, and a whole side is removed when both its lines
@@ -222,7 +223,7 @@
     var sideName = side === "groom" ? "Groom" : "Bride";
     var block = $(side + "Parents");
     if (!block) return;
-    var roles = ["Father", "Mother"];
+    var roles = side === "groom" ? ["Mother", "Father"] : ["Father", "Mother"];
     roles.forEach(function (role) {
       var nameEl = $(side + role);
       var line = nameEl && nameEl.parentNode;

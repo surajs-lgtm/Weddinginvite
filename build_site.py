@@ -166,11 +166,13 @@ def read_details(wb):
     return parents_view(details)
 
 
-# Which parent leads inside each set, as the couple asked: the groom's mother
-# on the groom's card, the bride's father on the bride's. This has to agree with
-# the order of the family__line blocks in index.html and family.html, because
-# those are what the family page renders and this is what the card renders.
-PARENT_LEAD = {"Groom": "mother", "Bride": "father"}
+# Which parent leads inside each set. Father first on both sides, as the couple
+# asked: the father is the senior of the two and leads on each card. This used
+# to lead with the groom's mother, which printed the couple's parents in two
+# different orders on the same page. It has to agree with the order of the
+# family__line blocks in index.html and family.html, because those are what the
+# family page renders and this is what the card renders.
+PARENT_LEAD = {"Groom": "father", "Bride": "father"}
 
 
 def parents_view(details):
@@ -183,9 +185,10 @@ def parents_view(details):
        field. That value is a father's -- it was typed into a field with no
        gender -- so it fills Father and Mother is left empty.
     2. Join both parents into the old display key so app.js and family.js keep
-       reading one field. The lead differs per side, see PARENT_LEAD: the
-       groom's card reads "Smt. Pushpa Singh & Shri Randhir Prasad Singh" and
-       the bride's reads "Shri Samsher Bahadur Singh & Smt. Shubhawati Devi".
+       reading one field. The lead is the father on both sides, see
+       PARENT_LEAD: the groom's card reads "Shri Randhir Prasad Singh &
+       Smt. Pushpa Singh" and the bride's reads "Shri Samsher Bahadur Singh
+       & Smt. Shubhawati Devi".
     3. A blank parent drops out of the join instead of leaving a dangling
        "&", and a side with neither stays empty so the card still removes the
        whole line.

@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=6ec44538">
+<link rel="stylesheet" href="styles.css?v=48627787">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -291,6 +291,16 @@
   <p class="section__eyebrow">Where</p>
   <h2 class="section__title">Venue &amp; Directions</h2>
   <div class="venue-grid" id="venueGrid"></div>
+  <!-- Practical details ride along in this section rather than a section of
+       their own. Parking, the hotel and the rest answer the same "where do I
+       go" question as the venue above, and they used to sit on the family page
+       only, so a guest holding the friends link never saw them. Wrapped so the
+       whole block collapses when the workbook has none of them filled in. -->
+  <div class="logistics-wrap" id="logisticsWrap" hidden>
+    <p class="section__eyebrow">On the day</p>
+    <h3 class="section__subtitle">Practical Details</h3>
+    <div class="logistics" id="logisticsList"></div>
+  </div>
 </section>
 
 <!-- ============ family contacts ============
@@ -420,6 +430,6 @@
 
 
 <script src="data.js?v=fb2430fb"></script>
-<script src="app.js?v=41c0414a"></script>
+<script src="app.js?v=9916e3fc"></script>
 </body>
 </html>

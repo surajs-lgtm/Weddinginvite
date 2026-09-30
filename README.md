@@ -56,12 +56,14 @@ guests a note you are still unsure about.
 Put a venue name in the **Venue** column only for the days that are not at the
 main venue, and it renders as a small tag on that row.
 
-**Family Details sheet** — only for `docs/family.html`. The long formal
-wording, a message to relatives, the baraat route, parking, accommodation and
-its map link, and two named contacts. `Accommodation Link` is optional: fill it
-in with a Google Maps URL and the accommodation block gets an **Open in Maps**
-button under the hotel names, so a relative can tap through instead of reading
-an address out loud. **Family Contacts sheet** — one row per person, for the
+**Family Details sheet** — the long formal wording and the message to
+relatives are used only by `docs/family.html`. The rest of the sheet is not:
+parking, accommodation, its map link, the baraat route, the gift note and the
+two named contacts all reach both cards, because they are practical answers
+rather than formal ones. `Accommodation Link` is optional: fill it in with a
+Google Maps URL and the accommodation block gets an **Open in Maps** button
+under the hotel names, so a guest can tap through instead of reading an
+address out loud. **Family Contacts sheet** — one row per person, for the
 "who do I call" section.
 
 **Family Members sheet** — the "Eagerly Awaiting Your Presence" list on the
@@ -189,7 +191,13 @@ schedule, the venue, RSVP.
 - **Eagerly Awaiting Your Presence**, the named relatives from the Family
   Members sheet, grouped into the groom's side and the bride's side
 - **Who To Call**, from the Family Contacts sheet
-- **Practical Details** — baraat route, parking, accommodation (with an Open in Maps link when `Accommodation Link` is filled in), gift note
+
+**Practical Details** is not on that list any more. Baraat route, parking,
+accommodation and the gift note moved inside the **Venue & Directions**
+section, so they are on the friends card too. Parking and the hotel answer the
+same "where do I go" question as the venue, and a guest holding the short
+friends link needs them as much as a relative does. `Accommodation Link` adds
+an **Open in Maps** button under the hotel names.
 
 Each of those blocks hides itself when its data is blank, so a half-filled
 workbook produces a shorter page rather than a page of empty headings.

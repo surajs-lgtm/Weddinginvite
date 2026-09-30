@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=6ec44538">
+<link rel="stylesheet" href="styles.css?v=48627787">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -306,16 +306,6 @@
   <div class="awaiting" id="awaitingList"></div>
 </section>
 
-<!-- ============ logistics ============
-     Baraat route, parking, accommodation and the gift note. Four independent
-     blocks, each hidden unless filled in, so the section collapses on its own
-     when there is nothing to say. -->
-<section class="section" id="logistics" hidden>
-  <p class="section__eyebrow">On the day</p>
-  <h2 class="section__title">Practical Details</h2>
-  <div class="logistics" id="logisticsList"></div>
-</section>
-
 <!-- ============ schedule ============ -->
 <section class="section" id="schedule">
   <p class="section__eyebrow">Celebrations</p>
@@ -344,6 +334,16 @@
   <p class="section__eyebrow">Where</p>
   <h2 class="section__title">Venue &amp; Directions</h2>
   <div class="venue-grid" id="venueGrid"></div>
+  <!-- Practical details ride along in this section rather than a section of
+       their own. Parking, the hotel and the rest answer the same "where do I
+       go" question as the venue above, and they used to sit on the family page
+       only, so a guest holding the friends link never saw them. Wrapped so the
+       whole block collapses when the workbook has none of them filled in. -->
+  <div class="logistics-wrap" id="logisticsWrap" hidden>
+    <p class="section__eyebrow">On the day</p>
+    <h3 class="section__subtitle">Practical Details</h3>
+    <div class="logistics" id="logisticsList"></div>
+  </div>
 </section>
 
 <!-- ============ family contacts ============
@@ -375,7 +375,6 @@
     <h2 class="section__title">Blessings for the Journey Ahead</h2>
     <p class="blessings__text" id="ashirwadText"></p>
   </section>
-
 
 <!-- ============ RSVP ============ -->
 <section class="section section--tint" id="rsvp">
@@ -474,12 +473,11 @@
        the card opens exactly as it would with music. -->
   <audio id="flute" src="assets/audio/flute.mp3" preload="auto"></audio>
 
-
 <script src="data.js?v=fb2430fb"></script>
-<script src="app.js?v=41c0414a"></script>
+<script src="app.js?v=9916e3fc"></script>
 <!-- family.js last, and only on this page. It reads the same window.WEDDING_DATA
      and adds the sections above; app.js is shared unchanged with index.html, so
      nothing on the friends page depends on this file. -->
-<script src="family.js?v=d179a390" defer></script>
+<script src="family.js?v=c09be56d" defer></script>
 </body>
 </html>

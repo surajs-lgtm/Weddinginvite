@@ -550,9 +550,9 @@
         functions: ui("venueCaption")
       }];
     }
-    $("venue").hidden = !list.length;
     $("mapFloat").hidden = !list.length;
-    if (!list.length) { $("mapFloat").removeAttribute("href"); return; }
+    if (!list.length) $("mapFloat").removeAttribute("href");
+    else $("mapFloat").href = mapHrefFor(list[0]);
 
     list.forEach(function (v) {
       var card = document.createElement("div");
@@ -567,9 +567,79 @@
         "</div>";
       vgrid.appendChild(card);
     });
-    $("mapFloat").href = mapHrefFor(list[0]);
+
+    return list.length > 0;
   }
-  renderVenues();
+
+  /* ---------------------------------------------------------- logistics
+     Baraat route, parking, accommodation and the gift note, as blocks inside
+     the Venue & Directions section rather than a section of their own: every
+     one of them answers "where do I go / what do I need", which is the same
+     question the venue answers, so a guest reads one card instead of hunting
+     down a second one further down. Lives in the shared script, not family.js,
+     because it is on the friends cards as well as the relatives' ones.
+
+     One row per Family Details field worth standing on its own. The second
+     element is the optional field holding its link, and only Accommodation
+     has one: a guest who is told the hotel name still has to find it, so
+     "Accommodation Link" opens it in Maps instead. Everything else is text and
+     carries no link. */
+  (function logistics() {
+    var wrap = $("logisticsWrap");
+    var list = $("logisticsList");
+    if (!wrap || !list) return false;
+
+    var F = (data.family || {}).details || {};
+    var blocks = [
+      ["Baraat Route"],
+      ["Parking"],
+      ["Accommodation", "Accommodation Link"],
+      ["Gift / Shagun Note"]
+    ];
+
+    var shown = 0;
+    blocks.forEach(function (pair) {
+      var value = (F[pair[0]] || "").trim();
+      var href = pair[1] ? (F[pair[1]] || "").trim() : "";
+      /* a link on its own is still worth showing: the hotel names may be left
+         blank while the map link is filled in, and a bare button beats nothing */
+      if (!value && !href) return;
+
+      var block = document.createElement("div");
+      block.className = "logistic";
+      var h = document.createElement("h3");
+      h.className = "logistic__title";
+      h.textContent = pair[0];
+      block.appendChild(h);
+      if (value) {
+        var p = document.createElement("p");
+        p.className = "logistic__text";
+        p.textContent = value;
+        block.appendChild(p);
+      }
+      if (href) {
+        var a = document.createElement("a");
+        a.className = "btn btn--soft btn--sm logistic__link";
+        a.textContent = ui("openInMaps");
+        a.href = href;
+        a.target = "_blank";
+        /* noopener keeps the new tab from reaching back into this one, the
+           same pair the venue map links use */
+        a.rel = "noopener";
+        block.appendChild(a);
+      }
+      list.appendChild(block);
+      shown++;
+    });
+
+    wrap.hidden = shown === 0;
+    return shown > 0;
+  })();
+
+  /* The section is now the card for both, so it stays up while either half has
+     something to say. Hiding it on the venues alone would drop the parking and
+     hotel details from a workbook that has venues on one row and neither. */
+  $("venue").hidden = !renderVenues() && !($("logisticsWrap") && !$("logisticsWrap").hidden);
 
   /* ============================================================ calendar */
   function buildICS() {

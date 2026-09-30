@@ -64,12 +64,9 @@
     node.textContent = s;
   }
 
-  function el(tag, className, content) {
-    var n = document.createElement(tag);
-    if (className) n.className = className;
-    if (content != null) n.textContent = content;
-    return n;
-  }
+  /* el() used to live here, for the practical-details blocks. Those moved into
+     app.js along with the markup they built, so nothing in this file creates an
+     element any more: it reads text into the nodes already in the page. */
 
   function niceDate(iso) {
     var d = new Date(iso + "T00:00:00");
@@ -245,48 +242,9 @@
      is rendered once, in the shared script, and this file no longer owns it.
      That is also why `family.contacts` is not read here any more. */
 
-  /* ---------------------------------------------------------- logistics */
-  (function logistics() {
-    var sec = $("logistics");
-    var list = $("logisticsList");
-    if (!sec || !list) return;
-
-    /* One row per Family Details field worth standing on its own. The second
-       element is the optional field holding its link, and only Accommodation
-       has one: a relative who is told the hotel name still has to find it, so
-       "Accommodation Link" opens it in Maps instead. Everything else is text
-       and carries no link. */
-    var blocks = [
-      ["Baraat Route"],
-      ["Parking"],
-      ["Accommodation", "Accommodation Link"],
-      ["Gift / Shagun Note"]
-    ];
-
-    var shown = 0;
-    blocks.forEach(function (pair) {
-      var value = (F[pair[0]] || "").trim();
-      var href = pair[1] ? (F[pair[1]] || "").trim() : "";
-      /* a link on its own is still worth showing: the hotel names may be left
-         blank while the map link is filled in, and a bare button beats nothing */
-      if (!value && !href) return;
-
-      var block = el("div", "logistic");
-      block.appendChild(el("h3", "logistic__title", pair[0]));
-      if (value) block.appendChild(el("p", "logistic__text", value));
-      if (href) {
-        var a = el("a", "btn btn--soft btn--sm logistic__link", "Open in Maps");
-        a.href = href;
-        a.target = "_blank";
-        /* noopener keeps the new tab from reaching back into this one, the
-           same pair the venue map links use */
-        a.rel = "noopener";
-        block.appendChild(a);
-      }
-      list.appendChild(block);
-      shown++;
-    });
-
-    sec.hidden = shown === 0;
-  })();
+  /* The "Practical Details" blocks moved into the Venue & Directions section,
+     and with them into app.js. They were a section of their own, and therefore
+     family-page only, which hid the parking and the hotel from anyone reading
+     the friends link. Same reason the "Who To Call" section moved: it is on
+     both cards now, so the shared script owns it and this file does not. */
 })();

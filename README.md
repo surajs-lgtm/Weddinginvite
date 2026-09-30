@@ -23,7 +23,7 @@ wedding planning/
     └── assets/
         ├── *.svg            <- decoration (mandala, jali, toran, ...)
         ├── favicon.svg
-        └── icons/*.svg      <- one line drawing per ritual
+        └── icons/*.svg      <- one line drawing per function
 ```
 
 `groom-details.xlsx` is deliberately **not** committed. It is your private
@@ -58,13 +58,8 @@ main venue, and it renders as a small tag on that row.
 
 **Family Details sheet** — only for `docs/family.html`. The long formal
 wording, a message to relatives, the baraat route, parking, accommodation, and
-two named contacts. **Rituals Section** is a `Yes`/`No` switch for the
-"What each function is" block: the groom's page leaves it off, the bride's
-carries her own. **Rituals sheet** — what each of the twelve functions is
-and why it happens, in the words you would use explaining it to family. Each
-row has its own **Verified?**: a row stays hidden until that is `Yes`, so an
-explanation you have not checked never reaches a relative. **Family Contacts
-sheet** — one row per person, for the "who do I call" section.
+two named contacts. **Family Contacts sheet** — one row per person, for the
+"who do I call" section.
 
 **Family Members sheet** — the "Eagerly Awaiting Your Presence" list on the
 family page. One row per relative, as many rows as you want: `Name` (required),
@@ -86,9 +81,9 @@ one place, `Wedding Year`, and the function dates follow.
 
 ### Publish and Audience
 
-Five of the sheets carry records rather than settings: **Wedding Functions**,
-**Rituals**, **Family Members**, **Family Contacts** and **RSVP List**. Each one
-ends with two dropdown columns.
+Four of the sheets carry records rather than settings: **Wedding Functions**,
+**Family Members**, **Family Contacts** and **RSVP List**. Each one ends with
+two dropdown columns.
 
 **Publish** decides whether a row exists on the site at all.
 
@@ -116,9 +111,9 @@ going out to guests, for instance. A blank or unrecognised value counts as
 `Both`, so a typo widens the audience rather than silently hiding a row.
 
 This replaces the old `Verified?` column. That column only ever gated the
-Rituals, Family Members and the guest-facing note on Wedding Functions, and it
-did two different jobs depending on the sheet. `Publish` is the same idea
-applied consistently, and `Audience` covers the cases it could not express.
+Family Members and the guest-facing note on Wedding Functions, and it did two
+different jobs depending on the sheet. `Publish` is the same idea applied
+consistently, and `Audience` covers the cases it could not express.
 
 ## 2. Rebuild the site
 
@@ -148,8 +143,8 @@ there.** It has no `--dry-run` and no `--help`, and it does not merge, so do not
 run it against the workbook you have been editing. Everything you have typed
 goes. It is only for starting over.
 
-**`add_family_sheets.py` overwrites four sheets** — Family Details, Rituals,
-Family Contacts and Family Members — with the defaults held in that file, and
+**`add_family_sheets.py` overwrites three sheets** — Family Details, Family
+Contacts and Family Members — with the defaults held in that file, and
 rewrites the four parent rows in Wedding Details. It exists so a workbook
 predating these sheets can be given them, and it is safe to re-run: it will not
 overwrite a parent name or a family member you have already typed. To change
@@ -170,7 +165,7 @@ A server is needed because the site loads `data.js` as a separate file; opening
 
 - Hero with the couple's names, date, venue, and a live countdown to the first
   function
-- Tabbed schedule, one tab per day, with a line drawing for each ritual, and the
+- Tabbed schedule, one tab per day, with a line drawing for each function, and the
   running function is highlighted
 - Venue cards with Maps links and a copy-address button
 - Download the whole schedule as a `.ics` file, so all 12 functions land in the
@@ -188,11 +183,6 @@ schedule, the venue, RSVP.
 
 - **The formal invitation** in printed-card order — blessing, both sets of
   parents, the couple, the request, the dates
-- **The Rituals**, a card per function explaining what it is and why it
-  happens. This is the real addition: a relative from another region, or your
-  spouse's colleague, would otherwise just see twelve unfamiliar names. It is
-  optional per card — the groom's page leaves it off, the bride's carries her
-  own — and the `Rituals Section` field on Family Details decides
 - **Eagerly Awaiting Your Presence**, the named relatives from the Family
   Members sheet, grouped into the groom's side and the bride's side
 - **Who To Call**, from the Family Contacts sheet
@@ -230,7 +220,7 @@ the blessing line.
 
 Everything else visual is original vector art drawn by `make_art.py`: a Hawa
 Mahal jali, a toran of marigolds and mango leaves, a kalash, a mandap, peacocks,
-diyas, and one line drawing per ritual.
+diyas, and one line drawing per function.
 
 ```bash
 python3 make_art.py    # rewrites the 24 SVGs in docs/assets/
@@ -244,7 +234,7 @@ on. Run it after any change to `make_art.py`.
 
 Two things worth knowing if you edit the drawings:
 
-- **The ritual icons are stroked with `currentColor`.** They are inlined into
+- **The function icons are stroked with `currentColor`.** They are inlined into
   `data.js` by `build_site.py` rather than loaded with `<img>`, so they inherit
   the theme colour. As an `<img>`, a `currentColor` icon renders black.
 - **An icon's viewBox is fitted to its own drawing.** That is why the numbers are

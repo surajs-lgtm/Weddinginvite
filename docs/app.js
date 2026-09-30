@@ -411,14 +411,10 @@
       '<circle cx="32" cy="32" r="24" opacity=".25"/></svg>';
   }
 
-  /* ============================================================ rituals */
-  /* One card per ritual, so a guest who does not know the customs can read
-     what the function is about before they arrive. */
   /* ============================================================ blessings
-     Replaces renderRituals. The old grid rendered one card per function —
-     a name and a date, twelve of them — which repeated the Schedule and
-     never actually explained the rituals as its own copy claimed to. This
-     renders a single ashirwad line instead.
+     The per-function ritual cards are gone: the schedule already lists the
+     functions, and the rituals are not being published. What remains is a
+     single ashirwad line.
 
      Stays hidden when the line is empty, so a workbook with the field left
      blank does not leave an "Ashirwad" heading over nothing. */
@@ -657,7 +653,7 @@
      This is deferred to DOMContentLoaded rather than run inline. app.js is a
      blocking script at the foot of the body, so anything it does here happens
      the moment it is parsed — which on family.html is *before* family.js, a
-     deferred script, has created a single ritual card, contact or name. The
+     deferred script, has created a single contact or name. The
      comment above used to claim the opposite. Deferred scripts all run before
      DOMContentLoaded, so waiting for that event is what puts the family
      page's cards in the DOM first; on the friends page it is simply a few
@@ -671,7 +667,7 @@
       "#schedule", "#feature", "#venue", "#blessings", "#rsvp", "#verse", ".footer"
     ].join(",");
     var nodes = Array.prototype.slice.call(document.querySelectorAll(blocks))
-      .concat(Array.prototype.slice.call(document.querySelectorAll(".event, .ritual, .venue, .count")))
+      .concat(Array.prototype.slice.call(document.querySelectorAll(".event, .venue, .count")))
       /* Anything still hidden — an unpopulated venue, a verse nobody filled
          in — is skipped rather than left stranded at opacity 0. */
       .filter(function (n) { return n.offsetParent !== null || n.getClientRects().length; });
@@ -687,7 +683,7 @@
     nodes.forEach(function (n) {
       n.setAttribute("data-reveal", "");
       /* Stagger siblings so a grid of cards arrives in sequence rather than
-         as one block. Capped, so a twelve-item ritual grid does not take
+         as one block. Capped, so a long list does not take
          most of a second to finish. */
       var index = Array.prototype.indexOf.call(n.parentNode.children, n);
       n.style.setProperty("--reveal-delay", Math.min(Math.max(index, 0), 7) * 65 + "ms");

@@ -799,7 +799,7 @@ body::after {
 .venue__links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
 
   /* ------------------------------------------------------------ blessings
-     Replaces the ritual grid. The mandala is the one ornament that was styled
+     Replaces the card grid. The mandala is the one ornament that was styled
      but never placed once the portrait took the hero, so it carries this panel
      instead of adding a new asset. */
   .section--blessings { max-width: 720px; padding-block: 76px; }
@@ -1180,17 +1180,17 @@ body::after {
   .deco, body::after { display: none !important; }
   body { background: #fff; padding-bottom: 0; }
   /* The `page-break-inside: avoid` that used to sit here was on .section, which
-     covers the schedule, the family list and the rituals — all of them several
+     covers the schedule, the family list and the cards — all of them several
      pages tall. An unsatisfiable break-inside is supposed to be dropped, but
      Chrome and Safari treat it greedily and push the whole block to the next
      page first, leaving large blank pages before the three tallest sections.
      Sections now flow, and the individual cards that should not be split are
      named explicitly instead. */
   .section { padding: 18px 0; }
-  .ritual, .contact, .logistic, .event, .venue, .count, .day-panel, .family {
+  .contact, .logistic, .event, .venue, .count, .day-panel, .family {
     break-inside: avoid;
   }
-  .ritual, .contact, .logistic, .family {
+  .contact, .logistic, .family {
     box-shadow: none; border-color: #ccc; background: #fff;
   }
   .hero__card { box-shadow: none; border: 1px solid #ddd; background: #fff; }
@@ -1253,56 +1253,6 @@ body::after {
 }
 .formal__note:empty { display: none; }
 
-/* ------------------------------------------------------------ rituals */
-/* A single column, not a grid. These are paragraphs of explanation and a grid
-   would put two side by side at desktop widths, which is a reading width of
-   about 30 characters. One card per function, full measure, left-aligned. */
-.rituals {
-  max-width: 720px; margin: 38px auto 0;
-  display: flex; flex-direction: column; gap: 22px;
-  text-align: left;
-}
-.ritual {
-  position: relative;
-  display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 4px 18px;
-  padding: 24px 26px;
-  background: rgba(255, 255, 255, .62);
-  border: 1px solid var(--sage-100);
-  border-radius: 4px;
-}
-.ritual__icon {
-  grid-row: span 4;
-  width: 44px; height: 44px;
-  color: var(--sage-700);
-  display: flex; align-items: flex-start; justify-content: center;
-}
-/* The icon SVG is inlined by build_site.py and sized by viewBox, so the width
-   here is what makes every ritual the same visual weight. */
-.ritual__icon svg { width: 100%; height: auto; }
-.ritual__head { margin-bottom: 4px; }
-.ritual__name {
-  margin: 0;
-  font-family: var(--display);
-  font-size: 1.28rem; font-weight: 500; color: var(--ink);
-  letter-spacing: .01em;
-}
-.ritual__when {
-  margin: 3px 0 0;
-  font-size: .74rem; letter-spacing: .11em; text-transform: uppercase;
-  color: var(--ink-mute);
-}
-.ritual__what { margin: 10px 0 0; font-size: 1rem; color: var(--ink); line-height: 1.7; }
-.ritual__why  { margin: 8px 0 0;  font-size: .93rem; color: var(--ink-soft); line-height: 1.7; }
-/* The family note is the part a relative cannot look up, so it is set apart
-   with a gold rule rather than given another font size. */
-.ritual__note {
-  margin: 14px 0 0; padding-left: 14px;
-  border-left: 2px solid var(--gold);
-  font-size: .9rem; color: var(--ink-soft); line-height: 1.65;
-}
-
 /* ----------------------------------------------------------- contacts */
 .contacts {
   max-width: 720px; margin: 34px auto 0;
@@ -1348,21 +1298,18 @@ body::after {
 
 /* --------------------------------------------------------- responsive */
 @media (max-width: 700px) {
-  .ritual { grid-template-columns: 40px 1fr; gap: 4px 14px; padding: 20px 18px; }
-  .ritual__icon { width: 32px; height: 32px; }
-  .ritual__name { font-size: 1.14rem; }
 }
 
 /* The family note is the one block that is likely to be pasted from a
    relative's own notes and run long, so it wraps rather than being clipped. */
-.formal__note, .ritual__what, .ritual__why, .ritual__note, .logistic__text {
+.formal__note, .logistic__text {
   overflow-wrap: break-word;
 }
 
 @media print {
   /* A relative may print this to take with them. Keep the practical details
      and drop the ornament and the RSVP form, as index.html already does. */
-  .ritual, .contact, .logistic { box-shadow: none; border-color: #ccc; background: #fff; }
+  .contact, .logistic { box-shadow: none; border-color: #ccc; background: #fff; }
 }
 
 /* ============================================================ parents (labelled)
@@ -1395,8 +1342,8 @@ body::after {
   text-align: center;
   margin: -.4rem 0 1.4rem;
 }
-/* The 38px top margin matches the Rituals list above, so the gap under a
-   section title reads the same going down the page. Without it the names butted
+/* The 38px top margin matches the card lists above, so the gap under a section
+   title reads the same going down the page. Without it the names butted
    straight up against "Eagerly Awaiting Your Presence". */
 .awaiting { display: flex; flex-direction: column; gap: 1.6rem; align-items: center; margin: 38px auto 0; }
 .awaiting__group { text-align: center; }

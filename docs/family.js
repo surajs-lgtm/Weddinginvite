@@ -27,17 +27,6 @@
      the data says the card is in Hindi. */
   var DATE_LOCALE = data.lang === "hi" ? "hi-IN" : "en-GB";
 
-  /* The one phrase this file writes that app.js does not already own: the note
-     under the rituals heading, which is rewritten to match however many
-     published rituals are actually shown. English unless data.ui says else. */
-  function ritualsSub(shown, total) {
-    var ui = data.ui || {};
-    if (ui.ritualsExplained) {
-      return ui.ritualsExplained.replace("{shown}", shown).replace("{total}", total);
-    }
-    return shown + " of the " + total +
-      " functions are explained here. The rest are listed in the schedule below.";
-  }
   /* The workbook's Audience column decides which card a record is allowed to
      appear on: Friends, Family or Both. build_site.py has already dropped every
      Publish = No row, so this only splits what survives between the two pages.
@@ -146,87 +135,11 @@
        `||` short-circuited before the name was reached. Blank out
        "Family Greeting" and "Opening Blessing Line" and the ReferenceError
        escapes this IIFE and the outer one, which silently skipped the
-       rituals, the family list, the contacts and the logistics after it. */
+       family list, the contacts and the logistics after it. */
     var any = blessing || (order.names || []).length || ask || dates;
     sec.hidden = !any;
   })();
 
-  /* ------------------------------------------------------------ rituals */
-  /* One card per function that has an explanation, in schedule order.
-     Rows with Publish = No never reach here: build_site.py drops them when it
-     reads the Rituals sheet, so a guess cannot be shown to a relative. */
-  (function rituals() {
-    var sec = $("rituals");
-    var list = $("ritualList");
-    if (!sec || !list) return;
-
-    /* The section is optional per card: the groom's family page leaves it off
-       and the bride's carries her own. The workbook decides, so an explicit No
-       hides it and anything else -- including a workbook saved before this
-       field existed -- shows it. */
-    if (String(F["Rituals Section"] || "").trim().toLowerCase().charAt(0) === "n") {
-      sec.hidden = true;
-      return;
-    }
-
-    var shown = 0;
-
-    events.forEach(function (ev) {
-      var r = ev.ritual || {};
-      /* Only the published ritual text opens a card. This used to read
-         `r.familyNote` as well, but familyNote lives on the event, not the
-         ritual, so that term was always undefined and the check rested
-         entirely on what/why. Left as the explicit pair it actually is: the
-         guarantee that nothing unpublished renders is build_site.py dropping
-         those rows at the Rituals sheet, and `ritual` is `{}` without one. */
-      if (!r.what && !r.why) return;
-
-      /* The ritual carries its own Audience, separate from its event's. An
-         event can be Family-visible while its explanation is not, so the
-         ritual is filtered in its own right -- otherwise a friends-only
-         explanation would ride in on a family-only function. */
-      if (!forAudience([r], "family").length) return;
-
-      var card = el("article", "ritual");
-
-      if (ev.iconSvg) {
-        var ic = el("div", "ritual__icon");
-        ic.setAttribute("aria-hidden", "true");
-        ic.innerHTML = ev.iconSvg;
-        card.appendChild(ic);
-      }
-
-      var head = el("div", "ritual__head");
-      head.appendChild(el("h3", "ritual__name", ev.event));
-
-      var when = [niceDate(ev.date), ev.timeStart].filter(Boolean).join(" · ");
-      head.appendChild(el("p", "ritual__when", when));
-      card.appendChild(head);
-
-      if (r.what) card.appendChild(el("p", "ritual__what", r.what));
-      if (r.why) card.appendChild(el("p", "ritual__why", r.why));
-
-      /* The family note is the part a relative cannot look up: who does this,
-         what to bring, what it means for them specifically. */
-      var note = r.note || ev.familyNote;
-      if (note) card.appendChild(el("p", "ritual__note", note));
-
-      list.appendChild(card);
-      shown++;
-    });
-
-    /* The heading promises every function, but only the published ones are
-       listed. A relative counting twelve rows against seven cards would think
-       five had gone missing, so the count is rewritten to what is shown. */
-    if (shown && shown !== events.length) {
-      var sub = sec.querySelector(".section__sub");
-      if (sub) {
-        sub.textContent = ritualsSub(shown, events.length);
-      }
-    }
-
-    sec.hidden = shown === 0;
-  })();
 
   /* ---------------------------------------------------- eagerly awaiting */
   /* The named relatives, grouped by side. Grouping is what makes this read

@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=2e565321">
+<link rel="stylesheet" href="styles.css?v=19345cc9">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
@@ -306,22 +306,6 @@
   <div class="awaiting" id="awaitingList"></div>
 </section>
 
-<!-- ============ rituals explained (family page only) ============
-     The single biggest thing this page adds. The friends page lists twelve
-     function names and assumes the reader knows what they are; a relative from
-     another region, or a spouse's colleague, does not. One card per function,
-     in schedule order, each with its icon.
-
-     Rendered by family.js from the Rituals sheet, and only for rows whose
-     Verified? is Yes, so an unconfirmed line is never shown. -->
-<section class="section" id="rituals">
-  <p class="section__eyebrow">What each function is</p>
-  <h2 class="section__title">The Rituals</h2>
-  <p class="section__sub">Twelve functions over four days. Here is what each one is,
-    and why it happens.</p>
-  <div class="rituals" id="ritualList"></div>
-</section>
-
 <!-- ============ family contacts ============
      Who to call, which is the question every relative actually has. Built from
      the Family Contacts sheet, plus the two named contacts on Family Details.
@@ -372,11 +356,11 @@
   <div class="venue-grid" id="venueGrid"></div>
 </section>
 
-<!-- ============ rituals ============ -->
-  <!-- Replaces the old "The Rituals We Honour" grid. That section promised to
-       explain what each function means but rendered only a name and a date, and
-       repeated the Schedule's twelve events. This panel is built from the one
-       thing the page had no home for: a single ashirwad line.
+<!-- ============ blessings ============ -->
+  <!-- The old "The Rituals We Honour" grid, and the per-function ritual cards
+       that followed it, are both gone: the schedule already lists the functions
+       and the rituals are not being published. What remains is a single
+       ashirwad line.
 
        Deliberately not the hero's "With the blessings of our families" and not
        the parents' names, which #families already carries. Repeating either
@@ -496,11 +480,11 @@
   <audio id="flute" src="assets/audio/flute.mp3" preload="auto"></audio>
 
 
-<script src="data-bride.js?v=921202c6"></script>
-<script src="app.js?v=5ae1208d"></script>
+<script src="data-bride.js?v=229c3bbf"></script>
+<script src="app.js?v=0932e08d"></script>
 <!-- family.js last, and only on this page. It reads the same window.WEDDING_DATA
      and adds the sections above; app.js is shared unchanged with index.html, so
      nothing on the friends page depends on this file. -->
-<script src="family.js?v=ae07a560" defer></script>
+<script src="family.js?v=03ea9b66" defer></script>
 </body>
 </html>

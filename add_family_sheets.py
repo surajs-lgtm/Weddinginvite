@@ -10,7 +10,7 @@ Two things import it:
     the workbook you already have
   - make_workbook.py calls write_family_sheets() when building from scratch
 
-So the family content exists in exactly one place. Editing a ritual's wording
+So the family content exists in exactly one place. Editing a contact's wording
 means editing it here and re-running add_family_sheets.py, and a workbook
 rebuilt from scratch gets the same text.
 
@@ -196,12 +196,6 @@ FAMILY_ROWS = [
     ("Family Contact 2 Phone", FILLIN, "With country code"),
     ("Family Contact 2 Role", FILLIN, ""),
     ("Gift / Shagun Note", FILLIN, "Optional. Left blank, nothing appears."),
-    # The rituals section is optional per card. The groom's page leaves it off
-    # and the bride's carries her own, so the workbook decides rather than the
-    # markup: an explicit No hides it, anything else shows it. Blank means show,
-    # so a workbook saved before this field existed keeps its rituals.
-    ("Rituals Section", "No",
-     "Yes | No - show the 'What each function is' section on the family page"),
     ("Awaiting Section Title", "Eagerly Awaiting Your Presence",
      "Heading above the list of family members. Leave blank to use the default."),
     ("Awaiting Section Note", FILLIN, "One line under the heading, e.g. 'From both our families'. Optional."),
@@ -239,59 +233,6 @@ MEMBER_ROWS = [
 # to the column in write_family_sheets. Anything unrecognised falls back to a
 # single untitled group rather than disappearing.
 MEMBER_SIDES = ("Groom's side", "Bride's side", "Both")
-
-# ------------------------------------------------------------------- Rituals
-# Every line here is researched but not all of it confirmed, so each row has a
-# Verified? column that gates it, exactly like Wedding Functions. A row stays
-# hidden until that is Yes, so a wrong guess never reaches a relative.
-RITUAL_ROWS = [
-    ("Function", "What it is", "Why it happens", "Family note", "Verified?"),
-    ("Matkor",
-     "The groom digs and lifts a handful of clean earth from the ground.",
-     "The wedding is built on that earth. The mandap, the fire and the meal are all understood to stand on it.",
-     "Traditionally done by the groom alone, early, before anyone else arrives.", "No"),
-    ("Madwa",
-     "A temporary canopy of bamboo is raised and dressed with leaves and cloth.",
-     "It is the roof over the wedding itself: the mandap stands under it for four days and comes down after.",
-     "Also called chaura or mandwa. The canopy is raised before the first function.", "Yes"),
-    ("Haldi Kalsa",
-     "Turmeric paste is applied to the couple, and a pool of haldi is kept for the guests to join in.",
-     "Turmeric is auspicious and purifying; the yellow is said to soften the eye and set the marriage on a bright note.",
-     "Wear old clothes. The paste is deliberately messy, and guests are meant to get some on them.", "Yes"),
-    ("Devpuji",
-     "The family deity is worshipped before the ceremony, with the pandit leading.",
-     "No auspicious beginning is made without asking, so the gods are invited first.",
-     "Locally also called Kalra. Confirm with your pandit whether it is one function or two.", "No"),
-    ("Ghee Dhari",
-     FILLIN, FILLIN, FILLIN, "No"),
-    ("Janeu",
-     "The sacred thread is tied on the groom, in the presence of the family.",
-     "It marks him as a householder carrying the line of his ancestors, and is a rite of passage in its own right.",
-     "Held on the groom's father's hand, from his paternal grandmother's generation.", "Yes"),
-    ("Lawa Bhujai",
-     FILLIN, FILLIN, FILLIN, "No"),
-    ("Baraat Prasthan",
-     "The groom rides out with music and a decorated vehicle, and is brought to the mandap.",
-     "The procession announces the wedding to the neighbourhood, and is the last time the groom arrives as an unmarried man.",
-     "The main function. This is the one the countdown runs to.", "Yes"),
-    ("Tilak",
-     "The groom's forehead is marked with a tilak as he joins the bride's family.",
-     "It is the groom being welcomed and accepted, and is the point the two families formally receive each other.",
-     "Tilak is applied by the bride's side.", "Yes"),
-    ("Jaimala",
-     "The couple exchange garlands.",
-     "The garland is a test: each lifts it and tries to place it over the other's neck, and the crowd cheers or heckles.",
-     "An open invitation to the baraat to play along.", "Yes"),
-    ("Sindoor Daan",
-     "The bride applies vermillion in the parting of the groom's hair.",
-     "It is the point the marriage is sealed, and from it the couple begin life together.",
-     "Traditionally the first sindoor of the marriage is applied by the bride alone.", "Yes"),
-    ("Vidai",
-     "The farewell: the bride leaves her natal home with the groom's party.",
-     "The name means 'leaving'. It is the emotional close of four days of functions and the start of the new home.",
-     "Traditionally the couple are given a bowl of rice and dal, to eat as they leave.", "No"),
-]
-
 # ------------------------------------------------------------ Family Contacts
 CONTACT_ROWS = [
     ("Name", "Relation to the couple", "Phone", "Reaches them about", "Notes"),
@@ -330,7 +271,7 @@ def write_family_sheets(wb, help_sheet=True):
     Existing sheets of the same name are dropped first, so running this twice
     in a row is a no-op rather than a duplicate-sheet error.
     """
-    for name in ("Family Details", "Rituals", "Family Contacts", "Family Members"):
+    for name in ("Family Details", "Family Contacts", "Family Members"):
         if name in wb.sheetnames:
             del wb[name]
 
@@ -341,22 +282,6 @@ def write_family_sheets(wb, help_sheet=True):
     for r in range(2, len(FAMILY_ROWS) + 1):
         ws.cell(row=r, column=1).font = title_font
     mark_field_value(ws, 2, 2, len(FAMILY_ROWS))
-
-    ws = wb.create_sheet("Rituals")
-    for r in RITUAL_ROWS:
-        ws.append(list(r))
-    style_table(ws, {"A": 20, "B": 46, "C": 52, "D": 44, "E": 12})
-    for r in range(2, len(RITUAL_ROWS) + 1):
-        ws.cell(row=r, column=1).font = title_font
-        ws.cell(row=r, column=5).alignment = center
-        for col in (2, 3, 4):
-            v = ws.cell(row=r, column=col).value
-            if isinstance(v, str) and v.strip() == FILLIN:
-                ws.cell(row=r, column=col).font = fill_font
-                ws.cell(row=r, column=col).fill = fill_fill
-    dv = DataValidation(type="list", formula1='"No,Yes"', allow_blank=True)
-    ws.add_data_validation(dv)
-    dv.add("E2:E200")
 
     ws = wb.create_sheet("Family Contacts")
     for r in CONTACT_ROWS:
@@ -399,10 +324,10 @@ def write_family_sheets(wb, help_sheet=True):
         if "6. THE FAMILY PAGE" not in existing:
             how.append(["", ""])
             how.append(("6. THE FAMILY PAGE", ""))
-            how.append(("docs/family.html is a longer version for relatives: what each ritual means, who to call, parking and baraat.", ""))
-            how.append(("It reads the Family Details, Rituals and Family Contacts sheets, plus the Family Detail column.", ""))
-            how.append(("Set Rituals Section on Family Details to No to leave the ritual explanations off a card.", ""))
-            how.append(("Rituals stay hidden until Verified? is Yes, so an unconfirmed line is never shown.", ""))
+            how.append(("docs/family.html is a longer version for relatives: who to call, parking and baraat.", ""))
+            how.append(("It reads the Family Details and Family Contacts sheets, plus the Family Detail column.", ""))
+            how.append(("Every record has a Publish column: No keeps it off the site entirely.", ""))
+
 
     return wb
 
@@ -442,13 +367,13 @@ def main():
 
     wb = write_family_sheets(load_workbook(BOOK))
     wb.save(BOOK)
-    print("added Family Details, Rituals, Family Contacts")
+    print("added Family Details, Family Contacts")
     print("added the Family Detail column to Wedding Functions")
     print("appended a family-page note to How To Use")
     print()
     print("This overwrote those three sheets with the defaults above.")
     print("Anything you had typed into them is gone. To edit the family")
-    print("content, edit FAMILY_ROWS / RITUAL_ROWS in this file instead,")
+    print("content, edit FAMILY_ROWS / CONTACT_ROWS / MEMBER_ROWS in this file instead,",1)
     print("or just type into the workbook and leave this script alone.")
 
 

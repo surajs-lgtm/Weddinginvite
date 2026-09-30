@@ -198,10 +198,10 @@ help_rows = [
     ("", ""),
     ("6. THE FAMILY PAGE", ""),
     ("index.html is the short version, for friends. family.html is the long one, for relatives.", ""),
-    ("It adds the formal invitation, what each ritual means, who to call, and parking and baraat.", ""),
-    ("It reads the Family Details, Rituals and Family Contacts sheets, plus the Family Detail column.", ""),
-    ("Set Rituals Section on Family Details to No to leave the ritual explanations off a card.", ""),
-    ("A ritual stays hidden until its Verified? is Yes, so an unconfirmed line is never shown.", ""),
+    ("It adds the formal invitation, who to call, and parking and baraat.", ""),
+    ("It reads the Family Details and Family Contacts sheets, plus the Family Detail column.", ""),
+    ("Every record has a Publish column: No keeps it off the site entirely.", ""),
+    
     ("Leave a field blank and that block simply does not appear on the page.", ""),
 ]
 for r in help_rows:
@@ -216,7 +216,7 @@ ws5["A1"].font = Font(name="Calibri", size=14, bold=True, color=MAROON)
 # The three family sheets and the Family Detail column live in
 # add_family_sheets.py, so a workbook built from scratch and one patched with
 # that script end up with identical content. Imported here rather than copied
-# so the ritual wording is only ever edited in one place.
+
 import add_family_sheets  # noqa: E402  (after the sheet styles are set up)
 
 # help_sheet=False because this script writes its own How To Use sheet below,

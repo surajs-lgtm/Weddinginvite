@@ -31,9 +31,11 @@ OUT = os.path.join(HERE, "docs", "data.js")
 
 FILLIN = "-- FILL IN --"
 
-# Which drawing each printed ritual gets. Matched loosely so OCR variants and
-# spelling differences on the card still find the right icon.
-RITUAL_ICONS = [
+# Which drawing each function on the schedule gets. Matched loosely so OCR
+# variants and spelling differences on the card still find the right icon.
+# These are keyed on the function, not on any ritual: the Rituals sheet is
+# gone, but the schedule still marks itself with a drawing per row.
+FUNCTION_ICONS = [
     ("tilak", ["tilak", "tilak ceremony"]),
     ("matkor", ["matkor"]),
     ("madwa", ["madwa", "madhwa", "madwa homa"]),
@@ -56,7 +58,7 @@ RITUAL_ICONS = [
 def icon_for(event_name):
     """Best icon key for a function name, or None."""
     low = (event_name or "").lower()
-    for key, needles in RITUAL_ICONS:
+    for key, needles in FUNCTION_ICONS:
         for needle in needles:
             if needle in low:
                 return key
@@ -68,7 +70,7 @@ _icon_svg = {}
 
 
 def icon_svg(key):
-    """Inline a ritual icon as markup.
+    """Inline a function icon as markup.
 
     The icons are stroked with currentColor so the page can theme them. That
     only works when the markup is in the document; an <img> would pin them to
@@ -117,10 +119,10 @@ def is_blank(value):
 # gate: a row that is anything but a Yes is dropped here, at build time, so an
 # unpublished record never reaches the generated data file at all. Audience
 # then decides which of the two pages a surviving record is allowed to render
-# on. Verified? used to do the Publish job for rituals and members; note that
-# on Wedding Functions it only ever gated the guest-facing note, while the
-# event itself was always published. Merging the two means a published event
-# now shows its note too.
+# on. Verified? used to do this job, but it only ever gated the guest-facing
+# note on Wedding Functions while the event itself was always published, and it
+# gated whole rows elsewhere. Merging the two means a published event now shows
+# its note too.
 AUDIENCES = ("friends", "family", "both")
 
 
@@ -225,44 +227,12 @@ def read_field_sheet(wb, name):
     return out
 
 
-def read_rituals(wb):
-    """The Rituals sheet, one row per function, gated on Publish.
-
-    A row whose Publish is anything but a Yes is dropped, so a half-researched
-    explanation never reaches a relative. Matches a function name loosely, so
-    "Madwa" in the sheet finds the "Madwa" event and "Baraat Prasthan" finds
-    "Baraat Prasthan", but a ritual that no longer matches any function is
-    simply unused.
-    """
-    if "Rituals" not in wb.sheetnames:
-        return {}
-    ws = wb["Rituals"]
-    out = {}
-    for row in ws.iter_rows(min_row=2, values_only=True):
-        def cell(i):
-            return row[i] if i < len(row) else None
-
-        name, what, why, note = cell(0), cell(1), cell(2), cell(3)
-        publish, audience = cell(4), cell(5)
-        if is_blank(name) or not is_published(publish):
-            continue
-        key = str(name).strip().lower()
-        out[key] = {
-            "what": "" if is_blank(what) else str(what).strip(),
-            "why": "" if is_blank(why) else str(why).strip(),
-            "note": "" if is_blank(note) else str(note).strip(),
-            "audience": norm_audience(audience),
-        }
-    return out
-
-
 def read_members(wb):
     """The Family Members sheet, one row per person, name required.
 
     These are the names printed under "Eagerly Awaiting Your Presence".
-    Unlike the Rituals sheet this is a display list, not an explanation, so a
-    row is only printed when its Publish cell says Yes. That way a relative's
-    name typed in but not yet marked for publication does not reach the page by
+    A row is only printed when its Publish cell says Yes, so a relative's name
+    typed in but not yet marked for publication does not reach the page by
     accident.
     """
     if "Family Members" not in wb.sheetnames:
@@ -320,22 +290,6 @@ def read_contacts(wb):
             }
         )
     return rows
-
-
-def match_ritual(rituals, event_name):
-    """Loose lookup of a function's ritual text, '' when there is none."""
-    if not rituals or not event_name:
-        return None
-    key = str(event_name).strip().lower()
-    if key in rituals:
-        return rituals[key]
-    # "Baraat Prasthan" in the sheet vs "Baraat Prasthan" in events is already
-    # exact; this catches the other direction, where the function sheet carries
-    # a qualifier the Rituals sheet does not ("Matkor (groom) " vs "Matkor").
-    for name, text in rituals.items():
-        if name and (name in key or key in name):
-            return text
-    return None
 
 
 def read_venues(wb):
@@ -469,7 +423,7 @@ def format_clock(minutes):
 
 
 # ------------------------------------------------------------------ functions
-def read_functions(wb, default_year, rituals=None):
+def read_functions(wb, default_year):
     """Sheet 2: the event schedule, grouped by day.
 
     Read by position rather than unpacked into named variables: the sheet has
@@ -497,7 +451,6 @@ def read_functions(wb, default_year, rituals=None):
         year, month, day = parsed
         start, end = split_time_range(time)
         event_name = str(name).strip()
-        ritual = match_ritual(rituals, event_name)
         icon = icon_for(name)
         events.append(
             {
@@ -525,7 +478,6 @@ def read_functions(wb, default_year, rituals=None):
                 # family-page only, and not gated on Publish because these are
                 # written for relatives rather than derived from the card
                 "familyNote": "" if is_blank(family_note) else str(family_note).strip(),
-                "ritual": ritual or {},
             }
         )
     events.sort(key=lambda e: (e["date"], e["startMinutes"] if e["startMinutes"] is not None else 0))
@@ -640,8 +592,7 @@ def build(book=None, out=None):
     default_year = int(m.group(1)) if m else datetime.now().year
     details["Wedding Year"] = str(default_year)
 
-    rituals = read_rituals(wb)
-    events, days = read_functions(wb, default_year, rituals)
+    events, days = read_functions(wb, default_year)
 
     # "Countdown Event" names the function the hero countdown targets. Match it
     # against the Functions sheet (loose compare, so "darwagar" finds
@@ -705,7 +656,6 @@ def build(book=None, out=None):
         "family": {
             "details": read_field_sheet(wb, "Family Details"),
             "contacts": read_contacts(wb),
-            "rituals": rituals,
             "members": read_members(wb),
         },
     }
@@ -742,13 +692,6 @@ def build(book=None, out=None):
     family = data["family"]
     family_missing = sorted(
         label for label, value in family["details"].items() if not str(value).strip()
-    )
-    unpublished = sorted(
-        wb["Rituals"].cell(row=r, column=1).value
-        for r in range(2, wb["Rituals"].max_row + 1)
-        if "Rituals" in wb.sheetnames
-        and not is_published(wb["Rituals"].cell(row=r, column=5).value)
-        and not is_blank(wb["Rituals"].cell(row=r, column=1).value)
     )
 
     # The data file is stamped under its own name, which is not always
@@ -835,10 +778,6 @@ def build(book=None, out=None):
     if family_missing:
         print(f"\nFamily page still to fill in ({len(family_missing)}):")
         for label in family_missing:
-            print(f"  - {label}")
-    if unpublished:
-        print(f"\nRituals not published, hidden from the site ({len(unpublished)}):")
-        for label in unpublished:
             print(f"  - {label}")
 
 

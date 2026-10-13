@@ -46,8 +46,9 @@
   --line:      rgba(78, 94, 50, 0.16);
   --line-soft: rgba(78, 94, 50, 0.10);
 
-  --display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --display: "Playfair Display", Georgia, "Times New Roman", serif;
   --sans:    "Jost", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --body:    var(--sans);
 
   /* whisper-soft, not drop-shadows */
   --shadow-sm: 0 2px 10px -6px rgba(78, 70, 52, 0.22);
@@ -1132,8 +1133,9 @@ body::after {
   --gold-light: #edcf72;
   --line: rgba(112, 37, 54, .16);
   --line-soft: rgba(112, 37, 54, .09);
-  --display: "Bodoni Moda", "Cormorant Garamond", Georgia, serif;
+  --display: "Playfair Display", Georgia, "Times New Roman", serif;
   --sans: "DM Sans", "Jost", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --body: var(--sans);
   --shadow-sm: 0 8px 22px rgba(112, 37, 54, .08);
   --shadow: 0 18px 45px rgba(112, 37, 54, .12);
   --r-sm: 10px;
@@ -3403,7 +3405,7 @@ body {
   text-shadow: 3px 3px 0 rgba(180, 71, 62, .18);
 }
 .hero__amp {
-  font-family: "Bodoni Moda", var(--display);
+  font-family: "Playfair Display", var(--display);
   font-style: italic;
 }
 .hero__line::before {
@@ -3420,7 +3422,7 @@ body {
 .banner__text::before,
 .banner__text::after {
   color: #b4473e;
-  font-family: "Bodoni Moda", var(--display);
+  font-family: "Playfair Display", var(--display);
   font-style: normal;
 }
 .banner__text::before { content: "❧  "; }

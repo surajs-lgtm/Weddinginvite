@@ -3802,6 +3802,11 @@ body::before {
   left: auto;
   bottom: auto;
 }
+#dayPanels .day-panel > .section__title {
+  width: auto;
+  max-width: none;
+  white-space: nowrap;
+}
 @media (max-width: 700px) {
   .hero__date-ribbon {
     top: 22px;

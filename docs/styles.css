@@ -2876,6 +2876,22 @@ body {
   .card::after { top: 22px; left: 22px; }
 }
 
+/* Final hero geometry override. */
+.hero__date-ribbon {
+  position: absolute !important;
+  top: 24px !important;
+  right: 24px !important;
+  left: auto !important;
+  bottom: auto !important;
+}
+@media (max-width: 700px) {
+  .hero__date-ribbon {
+    top: 22px !important;
+    right: 20px !important;
+    bottom: auto !important;
+  }
+}
+
 /* ============================================================
    experimental main page: gallery / field notes / route map
    ============================================================ */
@@ -3713,6 +3729,87 @@ body::before {
   }
 }
 
+/* Final overlap fix: use explicit zones inside the hero canvas. The copy owns
+   the left/top zone, the portrait owns the right/bottom zone, and the date
+   sticker stays in its own corner. */
+.hero__card {
+  isolation: isolate;
+  min-height: 720px;
+  padding: 92px 52% 78px 76px;
+}
+.hero__card > .deco--portrait {
+  display: none;
+}
+.hero__card::after {
+  z-index: -1;
+  top: 38px;
+  right: 30px;
+  bottom: 38px;
+  width: 42%;
+}
+.hero__card > .hero__petals {
+  pointer-events: none;
+  z-index: 4;
+}
+.hero__card > .hero__kalash {
+  z-index: 3;
+}
+.hero__blessing,
+.hero__names,
+.hero__line {
+  position: relative;
+  z-index: 5;
+}
+.hero__date-ribbon {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  left: auto;
+  bottom: auto;
+  z-index: 6;
+}
+.hero__line {
+  max-width: 18ch;
+  margin-bottom: 0;
+}
+@media (max-width: 700px) {
+  .hero__card {
+    min-height: 720px;
+    padding: 82px 24px 300px;
+  }
+  .hero__card::after {
+    z-index: 0;
+    top: auto;
+    right: 18px;
+    bottom: 24px;
+    width: 58%;
+    height: 31%;
+  }
+  .hero__date-ribbon {
+    top: 22px;
+    right: 20px;
+    min-width: 72px;
+    min-height: 72px;
+  }
+  .hero__line { max-width: 20ch; }
+}
+
+/* Keep the overlap fix after every legacy and cover rule. */
+.hero__date-ribbon {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  left: auto;
+  bottom: auto;
+}
+@media (max-width: 700px) {
+  .hero__date-ribbon {
+    top: 22px;
+    right: 20px;
+    bottom: auto;
+  }
+}
+
 /* Final cover pass: these rules intentionally sit after the historical
    responsive blocks so the opening scene shares the journal system. */
 .intro {
@@ -3781,4 +3878,20 @@ body::before {
     aspect-ratio: .74;
   }
   .card::after { top: 22px; left: 22px; }
+}
+
+/* Final hero geometry override. */
+.hero__date-ribbon {
+  position: absolute !important;
+  top: 24px !important;
+  right: 24px !important;
+  left: auto !important;
+  bottom: auto !important;
+}
+@media (max-width: 700px) {
+  .hero__date-ribbon {
+    top: 22px !important;
+    right: 20px !important;
+    bottom: auto !important;
+  }
 }

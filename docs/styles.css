@@ -2890,6 +2890,41 @@ body {
     right: 20px !important;
     bottom: auto !important;
   }
+
+  /* Keep the mobile opening scene within one viewport-friendly card. The
+     desktop collage has generous vertical breathing room; carrying that
+     spacing and the desktop portrait reserve onto a phone made the card grow
+     past 890px and put the fixed action bar over the artwork. */
+  .hero__card {
+    height: 720px;
+    min-height: 720px;
+    box-sizing: border-box;
+    padding: 40px 24px 250px;
+  }
+  .hero__card > .hero__kalash {
+    width: 42px;
+    margin-bottom: 16px;
+  }
+  .hero__blessing {
+    margin: 18px 0 18px;
+    font-size: .86rem;
+  }
+  .hero__names {
+    margin-top: 12px;
+    font-size: clamp(3.2rem, 14vw, 4.5rem);
+    line-height: .84;
+  }
+  .hero__line {
+    max-width: 18ch;
+    margin-top: 24px;
+    font-size: .82rem;
+  }
+  .hero__card::after {
+    right: 18px;
+    bottom: 24px;
+    width: 58%;
+    height: 31%;
+  }
 }
 
 /* ============================================================
@@ -3898,5 +3933,36 @@ body::before {
     top: 22px !important;
     right: 20px !important;
     bottom: auto !important;
+  }
+
+  .hero__card {
+    height: 720px !important;
+    min-height: 720px !important;
+    box-sizing: border-box;
+    padding: 40px 24px 250px !important;
+  }
+  .hero__card > .hero__kalash {
+    width: 42px !important;
+    margin-bottom: 16px !important;
+  }
+  .hero__blessing {
+    margin: 18px 0 !important;
+    font-size: .86rem !important;
+  }
+  .hero__names {
+    margin-top: 12px !important;
+    font-size: clamp(3.2rem, 14vw, 4.5rem) !important;
+    line-height: .84 !important;
+  }
+  .hero__line {
+    max-width: 18ch;
+    margin-top: 24px !important;
+    font-size: .82rem !important;
+  }
+  .hero__card::after {
+    right: 18px;
+    bottom: 24px;
+    width: 58%;
+    height: 31%;
   }
 }

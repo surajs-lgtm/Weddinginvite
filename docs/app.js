@@ -171,7 +171,7 @@
     if (!el) return;
     el.textContent = value || fallback || "";
   }
-  setText("heroBlessing", D["Opening Blessing Line"], "With the blessings of our families");
+  setText("heroBlessing", "A new chapter begins");
   placeNames("heroGroom", "heroBride", "heroAmp");
     /* Invitation Line, not Couple Line (short). The latter renders as "Suraj
        weds Priyanka" directly beneath the names, which already read "Suraj &
@@ -179,7 +179,7 @@
        phrase completes the classic request structure instead: blessing above
        the names, request below them. Falls back to the couple line, and then
        to a generic phrase, so an empty workbook still renders a sensible line. */
-    setText("heroLine", D["Invitation Line"] || D["Couple Line (short)"], "Together with their families");
+    setText("heroLine", "Two hearts. One beautiful beginning.");
 
   /* build_site.py emits weddingDateISO alongside the workbook's human string
      because "11 Dec 2026" + "T00:00:00" is not a date any engine is obliged to
@@ -262,7 +262,7 @@
     targetTime = new Date(target + "T00:00:00");
     targetTime.setMinutes(mins);
   }
-  setText("countdownLabel", (countdown && countdown.event) ? ui("countingDownTo") + " " + countdown.event : ui("countingDownToWedding"));
+  setText("countdownLabel", "Until we gather");
 
   // The Baraat feature card is captioned from the same countdown object, so it
   // can never drift out of step with the countdown above it.

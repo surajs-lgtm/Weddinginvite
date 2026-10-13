@@ -7,7 +7,7 @@
 <meta name="description" id="metaDesc" content="Wedding invitation and schedule.">
 <meta property="og:title" id="ogTitle" content="We're Getting Married">
 <meta property="og:description" id="ogDesc" content="Wedding invitation and schedule.">
-<meta name="theme-color" content="#fdfbf6">
+<meta name="theme-color" content="#f8efe1">
 <!-- Marks the document as script-capable before the stylesheet loads. The
      scroll-reveal hiding rule is scoped to .js, so this one attribute decides
      whether anything is ever hidden. It also runs first so the flag is set
@@ -16,7 +16,7 @@
 <script>document.documentElement.className += " js";</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css?v=48627787">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 </head>
@@ -159,13 +159,25 @@
 
 <header class="topbar">
   <span id="topHashtag" class="topbar__tag"></span>
-  <a class="btn btn--soft btn--sm" href="#rsvp">Kindly respond</a>
+  <a class="btn btn--soft btn--sm" href="#rsvp">Save your seat</a>
 </header>
 
 <!-- ============ hero ============ -->
 <section class="hero" id="hero">
   <div class="hero__card">
     <span class="deco deco--portrait" aria-hidden="true"></span>
+    <span class="hero__petals" aria-hidden="true">
+      <i class="petal petal--1"></i>
+      <i class="petal petal--2"></i>
+      <i class="petal petal--3"></i>
+      <i class="petal petal--4"></i>
+      <i class="petal petal--5"></i>
+      <i class="petal petal--6"></i>
+      <i class="petal petal--7"></i>
+      <i class="petal petal--8"></i>
+    </span>
+    <span class="hero__leaf hero__leaf--left" aria-hidden="true"></span>
+    <span class="hero__leaf hero__leaf--right" aria-hidden="true"></span>
     <span class="deco deco--corner deco--corner--tl" aria-hidden="true"></span>
     <span class="deco deco--corner deco--corner--tr" aria-hidden="true"></span>
     <span class="deco deco--corner deco--corner--bl" aria-hidden="true"></span>
@@ -173,7 +185,7 @@
 
     <img class="hero__kalash" src="/assets/kalash.svg" alt="" aria-hidden="true">
 
-    <p class="hero__blessing" id="heroBlessing">With the blessings of our families</p>
+    <p class="hero__blessing" id="heroBlessing">A new chapter begins</p>
 
     <h1 class="hero__names">
       <span class="hero__name" id="heroGroom">Groom</span>
@@ -190,7 +202,11 @@
          names, where it read as a caption to them rather than as the couple's
          ask. At the foot, after the names have already said who this is, it
          lands as the reason for the whole card. -->
-    <p class="hero__line" id="heroLine">Together with their families</p>
+    <p class="hero__line" id="heroLine">Two hearts. One beautiful beginning.</p>
+
+    <span class="hero__date-ribbon" aria-hidden="true">
+      <span>11</span><b>DEC</b><span>2026</span>
+    </span>
 
     <!-- The venue used to sit here as a line under the date. Removed from the
          card deliberately: the picture band directly below was being read as
@@ -206,15 +222,15 @@
        shorter than before and the 58% band is a slightly smaller strip. The
        band's own geometry (inset, height) is unchanged. -->
   <div class="hero__cta">
-    <a class="btn btn--solid" href="#schedule">View Schedule</a>
-    <a class="btn btn--soft" href="#venue">Venue &amp; Map</a>
-    <a class="btn btn--soft" href="#rsvp">RSVP</a>
+    <a class="btn btn--solid" href="#schedule">Explore the celebration</a>
+    <a class="btn btn--soft" href="#venue">Find the gathering</a>
+    <a class="btn btn--soft" href="#rsvp">Join the story</a>
   </div>
 </section>
 
 <!-- ============ countdown ============ -->
 <section class="countdown" id="countdown" aria-label="Countdown to the wedding">
-  <p class="section__eyebrow" id="countdownLabel">Counting down to</p>
+  <p class="section__eyebrow" id="countdownLabel">Until we gather</p>
   <div class="countdown__grid" id="countdownGrid">
     <div class="count"><span class="count__num" id="cDays">--</span><span class="count__lbl">Days</span></div>
     <div class="count"><span class="count__num" id="cHours">--</span><span class="count__lbl">Hours</span></div>
@@ -227,7 +243,7 @@
 <!-- ============ invitation line ============ -->
 <div class="banner">
   <span class="banner__rule" aria-hidden="true"></span>
-  <p class="banner__text">We invite you to celebrate with us</p>
+  <p class="banner__text">Come for the rituals. Stay for the joy.</p>
   <span class="banner__rule" aria-hidden="true"></span>
 </div>
 
@@ -235,7 +251,7 @@
 <div class="deco deco--divider" aria-hidden="true"></div>
 <section class="families" id="families" aria-label="Families">
   <div class="family" data-side="groom">
-    <h3 class="family__side">Groom's Family</h3>
+    <h3 class="family__side">His people</h3>
     <p class="family__names" id="groomParents">
       <span class="family__line" data-role="mother">
         <span class="family__role">Mother</span>
@@ -249,7 +265,7 @@
   </div>
   <div class="family__divider" aria-hidden="true"></div>
   <div class="family" data-side="bride">
-    <h3 class="family__side">Bride's Family</h3>
+    <h3 class="family__side">Her people</h3>
     <p class="family__names" id="brideParents">
       <span class="family__line" data-role="mother">
         <span class="family__role">Mother</span>
@@ -265,8 +281,8 @@
 
 <!-- ============ schedule ============ -->
 <section class="section" id="schedule">
-  <p class="section__eyebrow">Celebrations</p>
-  <h2 class="section__title">Wedding Schedule</h2>
+  <p class="section__eyebrow">The days we gather</p>
+  <h2 class="section__title">A calendar of joy</h2>
   <p class="section__sub" id="scheduleSub"></p>
 
   <div class="tabs" id="dayTabs" role="tablist" aria-label="Wedding days"></div>
@@ -278,7 +294,7 @@
   <span class="deco deco--mandap" aria-hidden="true"></span>
   <span class="feature__rule" aria-hidden="true"></span>
   <div class="feature__body">
-    <p class="section__eyebrow">The main event</p>
+    <p class="section__eyebrow">The moment we have been waiting for</p>
     <h2 class="feature__title" id="featureName">Baraat Prasthan</h2>
     <p class="feature__when" id="featureDate"></p>
   </div>
@@ -288,8 +304,8 @@
 <!-- ============ venue ============ -->
 <section class="section section--tint" id="venue">
   <span class="deco deco--jali" aria-hidden="true"></span>
-  <p class="section__eyebrow">Where</p>
-  <h2 class="section__title">Venue &amp; Directions</h2>
+  <p class="section__eyebrow">Set the scene</p>
+  <h2 class="section__title">Where the story unfolds</h2>
   <div class="venue-grid" id="venueGrid"></div>
   <!-- Practical details ride along in this section rather than a section of
        their own. Parking, the hotel and the rest answer the same "where do I
@@ -333,8 +349,8 @@
 
 <!-- ============ RSVP ============ -->
 <section class="section section--tint" id="rsvp">
-  <p class="section__eyebrow">Kindly respond</p>
-  <h2 class="section__title">RSVP</h2>
+  <p class="section__eyebrow">Your chapter matters</p>
+  <h2 class="section__title">Will you celebrate with us?</h2>
   <p class="section__sub" id="rsvpDeadline"></p>
 
   <form class="rsvp-form" id="rsvpForm" novalidate>
@@ -430,6 +446,6 @@
 
 
 <script src="/data.js?v=a911e3ca"></script>
-<script src="/app.js?v=7a7a6200"></script>
+<script src="/app.js?v=7a7a6201"></script>
 </body>
 </html>

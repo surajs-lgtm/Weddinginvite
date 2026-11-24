@@ -796,6 +796,7 @@ body::after {
   color: var(--sage-700); margin: 0 0 10px;
 }
 .venue__name { font-size: 1.45rem; font-weight: 500; color: var(--ink); }
+.venue__when { font-size: .88rem; font-weight: 500; color: var(--rose-deep); margin: 8px 0 0; }
 .venue__addr { font-size: .92rem; color: var(--ink-soft); margin: 12px 0 0; }
 .venue__links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
 

@@ -539,6 +539,21 @@
     return v.maps || ("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(v.name + " " + (v.address || "")));
   }
 
+  function venueWhen(v) {
+    var matchingEvents = events.filter(function (ev) {
+      return ev.venue && ev.venue.toLowerCase() === v.name.toLowerCase();
+    });
+    if (!matchingEvents.length && v.name === D["Primary Venue Name"] && data.weddingDateISO) {
+      return niceDate(data.weddingDateISO, { day: "numeric", month: "short" });
+    }
+    return matchingEvents.map(function (ev) {
+      return [
+        niceDate(ev.date, { day: "numeric", month: "short" }),
+        ev.timeStart
+      ].filter(Boolean).join(" · ");
+    }).filter(Boolean).join(" · ");
+  }
+
   function renderVenues() {
     vgrid.innerHTML = "";
     var list = (data.venues || []).filter(function (v) { return v.name; });
@@ -556,10 +571,12 @@
 
     list.forEach(function (v) {
       var card = document.createElement("div");
+      var when = venueWhen(v);
       card.className = "venue";
       card.innerHTML =
         '<p class="venue__what">' + esc(v.functions || "Venue") + "</p>" +
         '<h3 class="venue__name">' + esc(v.name) + "</h3>" +
+        (when ? '<p class="venue__when">' + esc(when) + "</p>" : "") +
         (v.address ? '<p class="venue__addr">' + esc(v.address) + "</p>" : "") +
         '<div class="venue__links">' +
           '<a class="btn btn--gold btn--sm" target="_blank" rel="noopener" href="' + esc(mapHrefFor(v)) + '">' + esc(ui("openInMaps")) + "</a>" +

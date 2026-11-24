@@ -304,7 +304,9 @@ def read_venues(wb):
         return []
     ws = wb["Venues"]
     venues = []
-    for name, address, maps, which in ws.iter_rows(min_row=2, values_only=True):
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        name, address, maps, which = row[:4]
+        date_time = row[4] if len(row) > 4 else None
         if is_blank(name):
             continue
         venues.append(
@@ -313,6 +315,7 @@ def read_venues(wb):
                 "address": "" if is_blank(address) else str(address).strip(),
                 "maps": "" if is_blank(maps) else str(maps).strip(),
                 "functions": "" if is_blank(which) else str(which).strip(),
+                "dateTime": "" if is_blank(date_time) else str(date_time).strip(),
             }
         )
     return venues

@@ -144,9 +144,9 @@ dv_v.add("G2:G200")
 
 # ---------------------------------------------------------------- Venues
 ws3 = wb.create_sheet("Venues")
-ws3.append(("Name", "Address", "Google Maps Link", "Which functions"))
-ws3.append((FILLIN, FILLIN, FILLIN, "Wedding / main function"))
-ws3.append(("Motel Blue Sapphire", "Opp. Vaishalli Mandapam, NH 73, Dehradun Road, Ramnagar, Roorkee, Uttarakhand 247667", "", "Reception"))
+ws3.append(("Name", "Address", "Google Maps Link", "Which functions", "Date / time"))
+ws3.append((FILLIN, FILLIN, FILLIN, "Wedding / main function", ""))
+ws3.append(("Motel Blue Sapphire", "Opp. Vaishalli Mandapam, NH 73, Dehradun Road, Ramnagar, Roorkee, Uttarakhand 247667", "", "Reception", ""))
 
 # ---------------------------------------------------------------- RSVP
 ws4 = wb.create_sheet("RSVP List")

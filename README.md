@@ -56,6 +56,10 @@ guests a note you are still unsure about.
 Put a venue name in the **Venue** column only for the days that are not at the
 main venue, and it renders as a small tag on that row.
 
+**Venues sheet** — each row provides a venue card. The optional **Date / time**
+field supplies the card's date and time when there is no matching function in
+the schedule; otherwise the card uses the matching function's date and time.
+
 **Family Details sheet** — the long formal wording and the message to
 relatives are used only by `docs/family.html`. The rest of the sheet is not:
 parking, accommodation, its map link, the baraat route, the gift note and the

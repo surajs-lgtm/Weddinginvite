@@ -543,15 +543,19 @@
     var matchingEvents = events.filter(function (ev) {
       return ev.venue && ev.venue.toLowerCase() === v.name.toLowerCase();
     });
-    if (!matchingEvents.length && v.name === D["Primary Venue Name"] && data.weddingDateISO) {
+    if (matchingEvents.length) {
+      return matchingEvents.map(function (ev) {
+        return [
+          niceDate(ev.date, { day: "numeric", month: "short" }),
+          ev.timeStart
+        ].filter(Boolean).join(" · ");
+      }).filter(Boolean).join(" · ");
+    }
+    if (v.dateTime) return v.dateTime;
+    if (v.name === D["Primary Venue Name"] && data.weddingDateISO) {
       return niceDate(data.weddingDateISO, { day: "numeric", month: "short" });
     }
-    return matchingEvents.map(function (ev) {
-      return [
-        niceDate(ev.date, { day: "numeric", month: "short" }),
-        ev.timeStart
-      ].filter(Boolean).join(" · ");
-    }).filter(Boolean).join(" · ");
+    return "";
   }
 
   function renderVenues() {

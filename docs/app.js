@@ -705,24 +705,38 @@
   });
 
   /* ============================================================ share */
-  $("shareBtn").addEventListener("click", async function () {
-    var shareData = {
-      title: title,
-      text: coupleLine + (D["Function Dates"] ? " · " + D["Function Dates"] : ""),
-      url: location.href
+  $("shareBtn").addEventListener("click", function () {
+    function venueDetails(heading, venue) {
+      if (!venue) return "";
+      return [
+        heading,
+        venueWhen(venue),
+        venue.name,
+        venue.address
+      ].filter(Boolean).join("\n");
+    }
+
+    var mainVenue = venues.filter(function (v) {
+      return v.name === D["Primary Venue Name"];
+    })[0] || {
+      name: D["Primary Venue Name"] || "",
+      address: D["Primary Venue Address"] || "",
+      dateTime: ""
     };
-    if (navigator.share) {
-      try { await navigator.share(shareData); return; } catch (e) { /* user cancelled */ }
-    }
-    try {
-      await navigator.clipboard.writeText(location.href);
-      var btn = this;
-      var label = btn.querySelector("span");
-      label.textContent = "Copied";
-      setTimeout(function () { label.textContent = "Share"; }, 1600);
-    } catch (e) {
-      prompt("Copy this link to share the invitation:", location.href);
-    }
+    var receptionVenue = venues.filter(function (v) {
+      return /reception/i.test(v.functions || "");
+    })[0];
+    var invitationUrl = new URL(location.href);
+    invitationUrl.hash = "";
+    var message = [
+      "You are invited to celebrate " + coupleLine + "!",
+      "",
+      venueDetails("Wedding / Main Function", mainVenue),
+      venueDetails("Reception", receptionVenue),
+      "",
+      "Invitation: " + invitationUrl.href
+    ].filter(Boolean).join("\n\n");
+    window.open("https://wa.me/?text=" + encodeURIComponent(message), "_blank", "noopener");
   });
 
   /* ============================================================ RSVP */

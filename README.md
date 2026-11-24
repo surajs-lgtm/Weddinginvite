@@ -180,7 +180,7 @@ A server is needed because the site loads `data.js` as a separate file; opening
 - Download the whole schedule as a `.ics` file, so all 12 functions land in the
   guest's phone calendar
 - RSVP form. Responses are saved in the browser and can be sent on WhatsApp
-- Share button, which uses the native share sheet on phones
+- Share button, which opens WhatsApp with a prefilled invitation and venue details
 
 ### Two pages
 
@@ -305,9 +305,9 @@ available. Budget roughly $10-15 for a `.com` for one year.
 
 ## 7. Sharing it
 
-The **Share** button on the page uses WhatsApp, or the native share sheet on a
-phone. To put a link in the printed card or a WhatsApp broadcast, just share the
-site's address.
+The **Share** button opens WhatsApp with a prefilled invitation message,
+including the wedding's main function, reception, and a link to the page. To put
+a link in the printed card or a WhatsApp broadcast, share the site's address.
 
 You have two links to hand out:
 

@@ -143,9 +143,10 @@ ws2.add_data_validation(dv_v)
 dv_v.add("G2:G200")
 
 # ---------------------------------------------------------------- Venues
-# Not created: every function is at the primary venue, so a separate venue
-# table would only ever hold placeholders. build_site.py reads the sheet only
-# if it exists, and the page falls back to Primary Venue Name / Address.
+ws3 = wb.create_sheet("Venues")
+ws3.append(("Name", "Address", "Google Maps Link", "Which functions"))
+ws3.append((FILLIN, FILLIN, FILLIN, "Wedding / main function"))
+ws3.append(("Motel Blue Sapphire", "Opp. Vaishalli Mandapam, NH 73, Dehradun Road, Ramnagar, Roorkee, Uttarakhand 247667", "", "Reception"))
 
 # ---------------------------------------------------------------- RSVP
 ws4 = wb.create_sheet("RSVP List")
